@@ -1,7 +1,7 @@
 # Site wide configuration
 
-title: "XLinBoy's Tech Blog"
-description: "Collection of everythings I want to record down especially for tech"
+title: "XLinBoy's Blog"
+description: "我的学习历程"
 logo: logo.jpg # 120x120 px default image used for Twitter summary card
 teaser: /teaser/default.jpg # 400x250 px default teaser image used in image archive grid
 locale:
@@ -25,7 +25,7 @@ permalink: /:categories/:title/
 markdown: kramdown
 kramdown:
     input: GFM
-highlighter: pygments
+highlighter: rouge
 gems:
   - jekyll-sitemap
 

@@ -49,11 +49,3 @@ tags: hbase base grammer
 		
 		每个节点启动了之后，可以查看各节点的角色，
 		bin/zkServer.sh status
-
-
-​	
-​	
-​	
-​	
-​	
-​	

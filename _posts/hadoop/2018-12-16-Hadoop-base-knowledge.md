@@ -1,5 +1,5 @@
 ---
-​layout: archive
+layout: archive
 title:  "hadoop基础知识细节"
 subtitle: 'post subtitle'
 date: 2018-12-16 08:44:13
@@ -7,7 +7,7 @@ categories: hadoop
 excerpt: "hadoop权威指南"
 ---
 
-# MapReduce
+### Hadoop
 
 常用名词意思
 > HDFS：分布式文件系统。 

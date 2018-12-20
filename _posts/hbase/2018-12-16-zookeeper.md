@@ -93,9 +93,7 @@ numChildren = 1	子节点数量
 1. client 连接到集群中的某一个节点
 2. client 向server1发送写请求
 3. 若server1 不是leader，server转发给leader
-    ```
-    leader会将写请求广播给各个server，leader会认识数据写成功了，并通知给server1
-    ```
+    >  leader会将写请求广播给各个server，leader会认识数据写成功了，并通知给server1
 4. 若半数以上的server都写成功了，leader会认为写操作成功，并通知server1
 5. server1通知client，数据写成功了。
 
