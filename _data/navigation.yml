@@ -2,20 +2,23 @@
 
 - title: Home
   url: /
-  excerpt: 
+  excerpt: ""
   image: 
 
-- title: MySQL
-  url: /mysql/
+- title: Hadoop
+  url: /hadoop/
+  excerpt: "hdfs yarn mapreduce sqoop flume"
 
-- title: Linux
-  url: /linux/
+- title: Hive
+  url: /hive/
+  excerpt: "hive基本语法, impala"
 
-- title: Python
-  url: /python/
+- title: Hbase
+  url: /hbase/
 
-- title: Jekyll
-  url: /jekyll/
+- title: spark
+  url: /spark/
+  excerpt: "scala, spark"
 
 - title: About Me
   url: /about/
