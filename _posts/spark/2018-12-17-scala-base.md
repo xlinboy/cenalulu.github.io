@@ -1,9 +1,8 @@
 ---
 layout: article
 title:  "scala基础及语法糖"
-categories: spark
 date:   2018-12-18 08:44:13
-permalink: /spark/
+categories: spark
 ---
 
 # 1. scala是什么

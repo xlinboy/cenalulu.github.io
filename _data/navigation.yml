@@ -16,7 +16,7 @@
 - title: Hbase
   url: /hbase/
 
-- title: spark
+- title: Spark
   url: /spark/
   excerpt: "scala, spark"
 
