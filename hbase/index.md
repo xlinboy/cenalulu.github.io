@@ -1,6 +1,6 @@
 ---
 layout: archive
-permalink: /Hbase/
+permalink: /hbase/
 title: "Latest Posts in *hbase*"
 excerpt: "Hbase调优, 原理"
 ---
