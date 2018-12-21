@@ -2,7 +2,7 @@
 layout: archive
 permalink: /hadoop/
 title: "Latest Posts in *hadoop*"
-excerpt: "I make living from IT"
+excerpt: "hadoop生态圈"
 ---
 
 <div class="tiles">

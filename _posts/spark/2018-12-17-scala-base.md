@@ -3,8 +3,7 @@ layout: article
 title:  "scala基础及语法糖"
 categories: spark
 date:   2018-12-18 08:44:13
-tags: scala base grammer
-description: 'scala 基础 语法糖'
+permalink: /spark/
 ---
 
 # 1. scala是什么
