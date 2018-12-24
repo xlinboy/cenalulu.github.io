@@ -7,8 +7,6 @@ tags: sqoop
 description: 'sqoop 是什么呢，适合场景如何？'
 ---
 
-
-
 ## NameNode
 
 > 主要用来保存HDFS元数据信息，比如命名空间信息，块信息等。当它运行的时候，这些信息是存在内存中的。但是这些信息也可以持久化到磁盘上。
@@ -24,7 +22,9 @@ description: 'sqoop 是什么呢，适合场景如何？'
 3. 如果NameNode挂掉了，那我们就丢失了很多改动因为此时的fsimage文件非常旧。
 
 ## Secondary NameNode
-> 主要作用：帮我们减少edits log文件的大小和得到一个最新的fsimage文件，从减少namenode的压力。它的职责是，合并NameNode的edits  log到fsimage文件中
+> 主要作用：帮我们减少edits log文件的大小和得到一个最新的fsimage文件，从减少namenode的压力。
+>
+> 它的职责是，合并NameNode的edits  log到fsimage文件中
 
 ![mark](http://pc06h57sq.bkt.clouddn.com/blog/181016/DF19igj73D.png?imageslim) 
 
