@@ -160,3 +160,71 @@ git log
 ```
 git push [url]
 ```
+
+### 通过实际操作学习Git
+
+#### 基础操作
+
+- `git init`——初始化仓库
+
+  ```shell
+  # .git 目录里存储着管理当前目录内容所需的仓库数据。
+  # git-tutorial 里面的内容一般叫做“附属于该仓库的工作树”
+  $ mkdir git-tutorial
+  $ cd git-tutorial
+  $ git init
+  ```
+
+- `git status`——查看仓库的状态
+
+- `git add`——向暂存区中添加文件
+
+  ```shell
+  $ git add README.md
+  $ git status
+  ```
+
+-  `git commit`——保存仓库的历史记录
+
+  ```shell
+  # 记述一行提交信息
+  $ git commit -m "First commit"
+  ```
+
+- `git log`——查看提交日志
+
+  ```shell
+  $ git log
+  # 只显示提交信息的第一行
+  $ git log --pretty=short
+  # 只显示指定目录、文件的日志
+  $ git log README.md
+  ```
+
+- `git diff`——查看更改前后的差别
+
+#### 分支的操作
+
+- git branch——显示分支一览表
+
+- git checkout  - b——创建、切换分支
+
+  ```shell
+  # 切换到 feature - A 分支并进行提交
+  $ git checkout -b feature-A
+  $ git branch
+  $ git add README.md
+  $ git commit -m "Add feature-A"
+  #  切换到 master 分支
+  $ git checkout master
+  # 切换回上一个分支
+  $ git checkout -
+  ```
+
+- git merge——合并分支
+
+  ```shell
+  # 切换到merge分支
+  $ git checkout master
+  $ git merge --no-ff feature-A
+  ```
