@@ -1,0 +1,1886 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>xlin的个人博客</title>
+    <description>记录编程的学习笔记</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Sat, 12 Jan 2019 16:52:09 +0800</pubDate>
+    <lastBuildDate>Sat, 12 Jan 2019 16:52:09 +0800</lastBuildDate>
+    <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>[Yarn]介绍</title>
+        <description>&lt;h3 id=&quot;yarn基本思想&quot;&gt;yarn基本思想&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Apache Yarn (Yet Another Resource Negotiator)是hadoop的集群资源管理系统&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;yarn-运行机制&quot;&gt;yarn 运行机制&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/khjK9La260.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;为了在yarn上运行一个应用&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;客户端联系Resource Manager 要求它运行一个application master进程&lt;/li&gt;
+  &lt;li&gt;resource manager 找到一个能够在容量中启动application master 的node manager&lt;/li&gt;
+  &lt;li&gt;application master 一旦运行起来后能做些什么都依赖应用本身
+4.可能在所处的Container中简单地运行一个计算，并将结果返回客户端；或者是向Resource Manager 请求更多容量，以用于一个分布式运算。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;yarn本身不会为应用的各部分彼此间的通信提供任何手段&lt;/p&gt;
+
+&lt;h4 id=&quot;resourcemanager-资源管理-技术总监&quot;&gt;ResourceManager 资源管理 技术总监&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;一个集群只有一个，全局资源管理器&lt;/li&gt;
+  &lt;li&gt;负责启动客户端提交的Application&lt;/li&gt;
+  &lt;li&gt;监控Node Manager，汇总上的的资源&lt;/li&gt;
+  &lt;li&gt;根据请求分配资源&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;nodemanager-小组长&quot;&gt;NodeManager 小组长&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;每个从节点一个&lt;/li&gt;
+  &lt;li&gt;监管自己所属节点的资源&lt;/li&gt;
+  &lt;li&gt;监控资源使用情况并向Resource manager 汇报&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;让applicationmaster负责-任务调度-项目经理&quot;&gt;让ApplicationMaster负责 任务调度 项目经理&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;每个作业启动一个&lt;/li&gt;
+  &lt;li&gt;根据作业切分任务tasks&lt;/li&gt;
+  &lt;li&gt;向Resource Manager申请资源&lt;/li&gt;
+  &lt;li&gt;与Node Manager协作，将分配申请到的资源给内部任务tasks&lt;/li&gt;
+  &lt;li&gt;监控tasks运行情况， 重启失败任务&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;yarn计算资源抽象&quot;&gt;yarn计算资源抽象&lt;/h3&gt;
+
+&lt;p&gt;在yarn中，计算资源被抽象为Container。&lt;/p&gt;
+
+&lt;p&gt;每个Container描述&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;可以使用的Cpu资源和内存资源&lt;/li&gt;
+  &lt;li&gt;执行命令&lt;/li&gt;
+  &lt;li&gt;环境变量&lt;/li&gt;
+  &lt;li&gt;外部资源&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如何获得运行各个任务的Container&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;由ApplicationMaster 向 ResourceManager申请&lt;/li&gt;
+  &lt;li&gt;ApplicatinoMaster 本身也运行一个Container， 这个Container由ResourceManager向自身申请启动&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如何启动运行&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;向Container所属的NodeManager发起运行&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;和组件之间的心跳信号&quot;&gt;和组件之间的心跳信号&lt;/h3&gt;
+
+&lt;h5 id=&quot;applicationmaster与resourcemanager心跳&quot;&gt;ApplicationMaster与ResourceManager心跳&lt;/h5&gt;
+&lt;ul&gt;
+  &lt;li&gt;AM =&amp;gt; RM
+    &lt;ul&gt;
+      &lt;li&gt;对Container的资源需求(cpu+memory)和优秀级&lt;/li&gt;
+      &lt;li&gt;已用完等待回收的Container列表&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;RM =&amp;gt; AM
+    &lt;ul&gt;
+      &lt;li&gt;新申请到的Container&lt;/li&gt;
+      &lt;li&gt;已完成的Container的状态&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;applicationmaster与nodemanager心跳&quot;&gt;ApplicationMaster与NodeManager心跳&lt;/h5&gt;
+&lt;ul&gt;
+  &lt;li&gt;AM =&amp;gt; NM
+    &lt;ul&gt;
+      &lt;li&gt;发起启动的Container请求&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;NM =&amp;gt; AM
+    &lt;ul&gt;
+      &lt;li&gt;汇报Container&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;nodemanager-与-resourcemanager心跳&quot;&gt;NodeManager 与 ResourceManager心跳&lt;/h5&gt;
+&lt;ul&gt;
+  &lt;li&gt;NM =&amp;gt; RM
+    &lt;ul&gt;
+      &lt;li&gt;Node Manager上所有的Container&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;RM =&amp;gt; NM
+    &lt;ul&gt;
+      &lt;li&gt;已删除和等待清理的Container列表&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;yarn调度器调度算法&quot;&gt;Yarn调度器&amp;amp;调度算法&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Yarn使用队列解决多租房中共享资源的问题。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;支持三种调度器：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;FIFO&lt;/li&gt;
+  &lt;li&gt;Capacity Scheduler&lt;/li&gt;
+  &lt;li&gt;Fair Scheduler&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;fifo调度器&quot;&gt;FIFO调度器&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;所有向集群提交的作业使用一个队列&lt;/li&gt;
+  &lt;li&gt;根据提交作业的顺序运动&lt;/li&gt;
+  &lt;li&gt;优点：
+    &lt;ul&gt;
+      &lt;li&gt;简单易懂&lt;/li&gt;
+      &lt;li&gt;可以按照作业优先级调度&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;缺点：
+    &lt;ul&gt;
+      &lt;li&gt;资源利用率不高&lt;/li&gt;
+      &lt;li&gt;不允许抢占&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;capacity-scheduler资源调度器&quot;&gt;Capacity Scheduler资源调度器&lt;/h4&gt;
+
+&lt;p&gt;设计思想：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;资源按照比例分配给各个队列&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;特点&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;计算能力保证
+    &lt;ul&gt;
+      &lt;li&gt;以队列为单位划分资源，每个队列保证最低资源&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;灵活性
+    &lt;ul&gt;
+      &lt;li&gt;当某个队列空间时，其资源可以分配给其他的队列使用&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;支持优先级
+    &lt;ul&gt;
+      &lt;li&gt;单个队列内部使用FIFO， 支持作业优先级调度&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;多租房
+    &lt;ul&gt;
+      &lt;li&gt;综合考虑多种因素防止单个作业、用户、或者队列 独占资源&lt;/li&gt;
+      &lt;li&gt;每个队列可以配置一定比例的最低资源配置和使用上限&lt;/li&gt;
+      &lt;li&gt;每个队列有严格的访问限制 ，只能自己队列提交任务&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;capacity-scheduler资源分配算法&quot;&gt;Capacity Scheduler资源分配算法&lt;/h5&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;选择队列
+    &lt;ul&gt;
+      &lt;li&gt;从跟队列开始，使用深度优先算法找出资源占用率最低的叶子节点&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;选择作业
+    &lt;ul&gt;
+      &lt;li&gt;默认按照作业优先级和提交时间顺序选择&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;选择Container
+    &lt;ul&gt;
+      &lt;li&gt;取该作业中最高优先级的Container，如果优先级相同会选择满足本地性的Container: Node Local &amp;gt; Rack Local &amp;gt; Different Rack&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;fair-scheduler-公平资源调度器&quot;&gt;Fair Scheduler 公平资源调度器&lt;/h4&gt;
+
+&lt;p&gt;设置思想： 资源公平分配。&lt;/p&gt;
+
+&lt;p&gt;具有与Capacity Scheduler 相似的特点。&lt;/p&gt;
+
+&lt;p&gt;不同点：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;核心策略不同
+    &lt;ul&gt;
+      &lt;li&gt;Capacity Scheduler 优先选择资源利用率最低的队列&lt;/li&gt;
+      &lt;li&gt;Fair Scheduler考虑是公平的， 公平体现在作业对资源 分配&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;单独设置队列间资源分配方式
+    &lt;ul&gt;
+      &lt;li&gt;FAIR 默认 used memory/ min share&lt;/li&gt;
+      &lt;li&gt;DRF 主资源公平调度&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;fair-scheduler---fair资源分配算法&quot;&gt;Fair Scheduler - FAIR资源分配算法&lt;/h5&gt;
+
+&lt;p&gt;总体流程与Capacity Scheduler一致&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;选择队列&lt;/li&gt;
+  &lt;li&gt;选择作业&lt;/li&gt;
+  &lt;li&gt;选择Container&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;选择队列和作业使用公平排序算法&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;实际最小份额
+    &lt;ul&gt;
+      &lt;li&gt;mindshare = min (资源需求量， 配置minShare)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;是否饥饿
+    &lt;ul&gt;
+      &lt;li&gt;isNeedy = 资源使用量 &amp;lt; minShare&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;资源分配比
+    &lt;ul&gt;
+      &lt;li&gt;minShareRatio = 资源使用量/max(mindshare, 1)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;资源使用权重比
+    &lt;ul&gt;
+      &lt;li&gt;useToWeightRatio = 资源使用量/权重&lt;/li&gt;
+      &lt;li&gt;权重 在配置文件中配置&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/yarn/2018/12/yarn.html</link>
+        <guid isPermaLink="true">http://localhost:4000/yarn/2018/12/yarn.html</guid>
+        
+        <category>Yarn</category>
+        
+        
+        <category>Yarn</category>
+        
+      </item>
+    
+      <item>
+        <title>[Sqoop]操作</title>
+        <description>&lt;h3 id=&quot;import&quot;&gt;Import&lt;/h3&gt;
+
+&lt;h4 id=&quot;sqoop-to-hive&quot;&gt;Sqoop to hive&lt;/h4&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop import &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; book_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--columns&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'book_id,book_name'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--where&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'book_id &amp;lt; 20'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--delete-target-dir&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--num-mappers&lt;/span&gt; 1 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-import&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-database&lt;/span&gt; default &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-table&lt;/span&gt; book_info
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;还可以使用query&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop import &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--query&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'select book_id,book_name from book_info where $CONDITIONS'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--target-dir&lt;/span&gt; /user/hive/book_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--delete-target-dir&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--num-mappers&lt;/span&gt; 1 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-import&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-database&lt;/span&gt; default &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-table&lt;/span&gt; book_info
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;如果使用query， 就不需要指定–column, –table, –where&lt;/li&gt;
+  &lt;li&gt;conditions 相当于1=1
+    &lt;h4 id=&quot;sqoop-增量导入&quot;&gt;Sqoop 增量导入&lt;/h4&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;append-自增id&quot;&gt;append 自增id&lt;/h5&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop import &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; book_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--columns&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'book_id,book_name'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--num-mappers&lt;/span&gt; 1 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-import&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-database&lt;/span&gt; default &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-table&lt;/span&gt; book_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--incremental&lt;/span&gt; append &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--check-column&lt;/span&gt; book_id &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--last-value&lt;/span&gt; 20 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;lastmodified-日期&quot;&gt;lastmodified 日期&lt;/h4&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop import &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; book_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--columns&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'book_id,publish_date'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--num-mappers&lt;/span&gt; 1 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-import&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-database&lt;/span&gt; default &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-table&lt;/span&gt; book_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--incremental&lt;/span&gt; lastmodified &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--check-column&lt;/span&gt; publish_date &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--last-value&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'2018-07-10 19:53:40'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;export&quot;&gt;export&lt;/h3&gt;
+
+&lt;h4 id=&quot;导出到mysql&quot;&gt;导出到mysql&lt;/h4&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop &lt;span class=&quot;nb&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt;  jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--driver&lt;/span&gt; com.mysql.jdbc.Driver &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; recruitment &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\001'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--export-dir&lt;/span&gt; /user/hive/warehouse/work.db/job_tmp &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;更新mysql字段&quot;&gt;更新mysql字段&lt;/h4&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop &lt;span class=&quot;nb&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--driver&lt;/span&gt; com.mysql.jdbc.Driver &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--columns&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'id,salary'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; work_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--export-dir&lt;/span&gt; /user/hive/warehouse/work.db/job_info_textfile &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--update-key&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'id'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C.html</link>
+        <guid isPermaLink="true">http://localhost:4000/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C.html</guid>
+        
+        <category>Sqoop</category>
+        
+        
+        <category>Sqoop</category>
+        
+      </item>
+    
+      <item>
+        <title>[Sqoop]基础知识</title>
+        <description>&lt;h3 id=&quot;1-问题&quot;&gt;1. 问题&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;假设：目前正式生产环境的数据出现了错误或者是偏差（2000w）修正这些错误？&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;解决：利用&lt;strong&gt;sqoop（数据修正）&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;2-sqoop是什么&quot;&gt;2. sqoop是什么&lt;/h3&gt;
+&lt;p&gt;全称：SQL TO HADOOP&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;sqoop 是一个hadoop与关系弄数据库之间相互数据传输的工具。sqoop可以将数据从关系型数据库, (例如mysql或oracle或大型机) 导入到hdfs，转换成MapReduce数据，然后将数据导回到关系型数据库。&lt;/p&gt;
+
+  &lt;p&gt;sqoop的import依赖数据库的描述约束。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;sqoop本质是mapreduce，但是仅存在Map task。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;sqoop 将sql转化成.java文件打成jar包执行mapreduce&lt;/p&gt;
+
+&lt;h4 id=&quot;sqoop-执行流程&quot;&gt;sqoop 执行流程&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/sqoop%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.png&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;准备数据集 (preparing resultset)&lt;/li&gt;
+  &lt;li&gt;生成mapreduce,.java文件 (codgen)&lt;/li&gt;
+  &lt;li&gt;打成jar包, (compile jar)
+    &lt;ul&gt;
+      &lt;li&gt;执行查询拉取数据&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;到yarn上执行map task (mapreduce on yarn)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;3-环境依赖&quot;&gt;3. 环境依赖&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;hadoop&lt;/li&gt;
+  &lt;li&gt;hive&lt;/li&gt;
+  &lt;li&gt;hbase&lt;/li&gt;
+  &lt;li&gt;zookeeper&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;4-基础用法&quot;&gt;4. 基础用法&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;对于数据库，sqoop将逐行导入hdfs。&lt;/li&gt;
+  &lt;li&gt;对于大型的数据集，sqoop从不同的大型数据集读记录到hdfs。&lt;/li&gt;
+  &lt;li&gt;导入的进程是并行的&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;通用链接参数&quot;&gt;通用链接参数&lt;/h4&gt;
+&lt;p&gt;sqoop 连接数据库三要素：&lt;/p&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; &amp;lt;jdbc-uri&amp;gt; 指定要连接的数据库
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; &amp;lt;username&amp;gt; 访问数据库的用户名
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; &amp;lt;password&amp;gt;  访问数据库的密码
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; TEST			设置要访问的表
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;5-import&quot;&gt;5. Import&lt;/h3&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop import &lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; book_info
+&lt;span class=&quot;nt&quot;&gt;--columns&lt;/span&gt; book_name, book_type &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--delete-target-dir&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--num-mappers&lt;/span&gt; 1 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;num-mappers：指明map task的数目&lt;/li&gt;
+  &lt;li&gt;direct，是msql中提高查询 效率的工具 mysqldump, &lt;code class=&quot;highlighter-rouge&quot;&gt;select * from xx&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;columns 指定列&lt;/li&gt;
+  &lt;li&gt;fields-terminated-by 指定分隔符&lt;/li&gt;
+  &lt;li&gt;delete-target-dir  如果文件存在则删除, 不能和增量导入一起使用&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;注意：&lt;strong&gt;如果要使用direct参数，需要将mysqldump文件添加每台datanode的/usr/bin下也就是说mysqldump操作是由集群中的datanode节点来执行。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h5 id=&quot;指定文件来执行sqoop&quot;&gt;指定文件来执行sqoop&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop --options-file /users/homer/work/import.txt --table TEST  
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;options-file：指定文件读取目录。&lt;/li&gt;
+  &lt;li&gt;fields-terminated-by：指定内容行字段的分隔符，默认以逗号分割。&lt;/li&gt;
+  &lt;li&gt;delete-target-dir：如果导入的hdfsh目录存在，则删除。&lt;/li&gt;
+  &lt;li&gt;target-dir：指定import,导入的hdfs路径。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Import&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;to&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Hive&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;--hive-import&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;--hive-database &amp;lt;database-name&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;--hive-table &amp;lt;table-name&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;hive&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;的日志，除了在&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hive&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;下，还可以有&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tmp&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;下可以看到&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;java.lang.ClassNotFoundException&lt;/strong&gt;：找不到对应jar包&lt;/p&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;需要将对应的依赖包导入到 sqoop/lib包下
+
+hive/lib/jdo-&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;-.jar 
+        hive-&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;-.jar
+        antlr-&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;-.jar
+		calcite-&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;-.jar
+		datanucleus-&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt;-.jar
+		
+拷贝hive/conf/hive-site.xml到sqoop/conf下
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80.html</link>
+        <guid isPermaLink="true">http://localhost:4000/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80.html</guid>
+        
+        <category>Sqoop</category>
+        
+        
+        <category>Sqoop</category>
+        
+      </item>
+    
+      <item>
+        <title>[Sqoop]操作实战</title>
+        <description>&lt;h2 id=&quot;需求&quot;&gt;需求&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;现在发现职业分析数据库中，各大城市中工作1-3的大数据人员的薪资出现偏差,偏差值为2000, 修改该偏差值，并更新RBDMS中。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;创建textfile-hive表&quot;&gt;创建textfile hive表&lt;/h3&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;work&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;job_info_textfile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;salary&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;float&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+&lt;span class=&quot;k&quot;&gt;row&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;format&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delimited&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fields&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;terminated&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\t&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h3 id=&quot;将误差数据导入到hive中&quot;&gt;将误差数据导入到hive中&lt;/h3&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop import &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; recruitment &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--columns&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'id, salary'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--where&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;' work_experience&amp;gt;=1 and work_experience&amp;lt;=3'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--delete-target-dir&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-import&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-database&lt;/span&gt; work &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--hive-table&lt;/span&gt; job_info_textfile
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;创建orc-更新acid表&quot;&gt;创建orc 更新ACID表&lt;/h3&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;work&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;job_info_orc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;salary&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;float&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;clustered&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;by&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;into&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;buckets&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;row&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;format&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delimited&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fields&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;terminated&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\t&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;stored&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ORC&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tblproperties&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'transactional'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'true'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;将误差数据导入orc格式的表中&quot;&gt;将误差数据导入orc格式的表中&lt;/h3&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;insert&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;into&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;work&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;job_info_orc&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;salary&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;work&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;job_info_textfile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;将误差修正&quot;&gt;将误差修正&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;update work.job_info_orc SET salary = salary-2000;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;将修正好的数据导致textfile中&quot;&gt;将修正好的数据，导致textfile中&lt;/h3&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;insert&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;overwrite&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;work&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;job_info_textfile&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;select&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;salary&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;work&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;job_info_orc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;将mysql中的误差数据更新&quot;&gt;将mysql中的误差数据更新&lt;/h3&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;sqoop &lt;span class=&quot;nb&quot;&gt;export&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--connect&lt;/span&gt; jdbc:mysql://hadoop1:3306/test &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--username&lt;/span&gt; root &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--password&lt;/span&gt; 123456 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--driver&lt;/span&gt; com.mysql.jdbc.Driver &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--columns&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'id,salary'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--num-mappers&lt;/span&gt; 5&lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--table&lt;/span&gt; recruitment &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--fields-terminated-by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'\t'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--export-dir&lt;/span&gt; /user/hive/warehouse/work.db/job_info_textfile &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--update-key&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'id'&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;--direct&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/sqoop/2018/12/Sqoop-%E4%BF%AE%E6%94%B9%E8%AF%AF%E5%B7%AE%E6%95%B0%E6%8D%AE.html</link>
+        <guid isPermaLink="true">http://localhost:4000/sqoop/2018/12/Sqoop-%E4%BF%AE%E6%94%B9%E8%AF%AF%E5%B7%AE%E6%95%B0%E6%8D%AE.html</guid>
+        
+        <category>Sqoop</category>
+        
+        
+        <category>Sqoop</category>
+        
+      </item>
+    
+      <item>
+        <title>[Secondary NameNode]详解</title>
+        <description>&lt;h2 id=&quot;namenode&quot;&gt;NameNode&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;主要用来保存HDFS元数据信息，比如命名空间信息，块信息等。当它运行的时候，这些信息是存在内存中的。但是这些信息也可以持久化到磁盘上。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/6b8FC7bb9f.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;fsimage: 它是在NameNode启动时对整个文件系统的快照&lt;/p&gt;
+
+&lt;p&gt;edits log: 它是在NameNode启动后，对文件系统的改动序列&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;只有在NameNode重启时，edits log才会合并到fsimage文件中，从而得到一个文件系统的最新快照。但是在生产环境集群中的NameNode是很少重启的， &lt;strong&gt;这意味者当NameNode运行来很长时间后，edits文件会变的很大。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在这种情况下就会出现下面这些问题：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;edits log文件会变的很大，怎么去管理这个文件是一个挑战。&lt;/li&gt;
+  &lt;li&gt;NameNode的重启会花费很长时间，因为有很多改动[在edits log中]要合并到fsimage文件上。&lt;/li&gt;
+  &lt;li&gt;如果NameNode挂掉了，那我们就丢失了很多改动因为此时的fsimage文件非常旧。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;secondary-namenode&quot;&gt;Secondary NameNode&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;主要作用：帮我们减少edits log文件的大小和得到一个最新的fsimage文件，从减少namenode的压力。&lt;/p&gt;
+
+  &lt;p&gt;它的职责是，合并NameNode的edits  log到fsimage文件中&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/DF19igj73D.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;客户端向namenode发出更新元数据的请求&lt;/li&gt;
+  &lt;li&gt;snn 向nn请求checkpoint（合并数据）&lt;/li&gt;
+  &lt;li&gt;此时namenode会滚动当前在操作的日志文件edits.inprogress。&lt;/li&gt;
+  &lt;li&gt;snn会将edits文件(多个滚动的文件)和镜像文件fsimage下载&lt;/li&gt;
+  &lt;li&gt;根据操作日志文件根据一些算法计算出元数据从而来和镜像文件进行合并存到内存中。&lt;/li&gt;
+  &lt;li&gt;将合并后的元数据dump成新的image文件，持久化到硬盘(fsimage.chkpoint)&lt;/li&gt;
+  &lt;li&gt;上传新的fsimage到NameNode。&lt;/li&gt;
+  &lt;li&gt;NameNode把旧的fsimage用新的覆盖掉。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;日志的滚动&quot;&gt;日志的滚动：&lt;/h4&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;日志文件是一个正在写的edits.inprogress,多个滚动的ecits.000001..。checkpoint时，将正在写的滚动。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;snn的特点&quot;&gt;SNN的特点：&lt;/h4&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Secondary NameNode所做的是在文件系统这设置一个Checkpoint来&lt;strong&gt;帮助NameNode更好的工作&lt;/strong&gt;;它不是取代NameNode，也不是NameNode的备份。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Secondary NameNode的检查进程启动，由两个参数配置:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;fs.checkpoint.period，指定连续两次检查点的最大时间间隔， 默认值是1小时。&lt;/li&gt;
+  &lt;li&gt;fs.checkpoint.size定义了edits日志文件的最大值，一旦超过这个值会导致强制执行检查点（即使没到检查点的最大时间间隔）。默认值是64MB。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;NameNode会从fs.checkpoint.dir目录读取检查点，并把它保存在dfs.name.dir目录下。
+    &lt;ul&gt;
+      &lt;li&gt;如果dfs.name.dir目录下有合法的镜像文件，NameNode会启动失败。 NameNode会检查fs.checkpoint.dir目录下镜像文件的一致性，但是不会去改动它。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;如果NameNode上除了最新的检查点以外，所有的其他的历史镜像和edits文件都丢失了， NameNode可以引入这个最新的检查点。以下操作可以实现这个功能：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;在配置参数dfs.name.dir指定的位置建立一个空文件夹；&lt;/li&gt;
+  &lt;li&gt;把检查点目录的位置赋值给配置参数fs.checkpoint.dir；&lt;/li&gt;
+  &lt;li&gt;启动NameNode，并加上-importCheckpoint。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;NameNode硬盘坏了，数据能恢复吗？如果能，能够全部恢复吗？&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;能, 把Secondary NameNode的元数据拷贝给namenode&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;不能, 可能会丢失最后一次操作30min内(默认时间)或不超过64M大小数据的所有操作&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;NameNode宕机了，有Sercondary NameNode存在，所以hdfs还是只可以用的吗？&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;不可以，Secondary NameNode只是协助进行元数据合并，不对外提供服务，所以hdfs会瘫痪。
+热备：你坏了，我立马顶上。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;有Sercondary NameNode 和NameNode我们配置时需要注意什么？&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;NameNode, Secondary NameNode不能配置在同一个节点上&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;hdfs的工作目录，至少配置两个，会同时向两个目录写东西，内容完全一样。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hadoop/2018/12/Secondary-NameNode-(SNN).html</link>
+        <guid isPermaLink="true">http://localhost:4000/hadoop/2018/12/Secondary-NameNode-(SNN).html</guid>
+        
+        <category>Hadoop</category>
+        
+        
+        <category>Hadoop</category>
+        
+      </item>
+    
+      <item>
+        <title>[Mapreduce]执行流程</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;MapReduce是一个分布式运算程序的编程框架。其核心功能是：将用户编写的业务逻辑代码和自带默认组件整合成一个完整的分布式运算程式。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;mapreduce框架结构以及核心机制&quot;&gt;MapReduce框架结构以及核心机制&lt;/h3&gt;
+&lt;p&gt;一个完整的mapreduce程序在分布式运行时有三类实例进程：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;MRAppMaster：负责整个程序的过程调度及状态协调&lt;/li&gt;
+  &lt;li&gt;MapTask：负责map阶段整个数据处理流程&lt;/li&gt;
+  &lt;li&gt;ReduceTask：负责reduce阶段的整个数据处理流程&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;流程图&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/dbfjHdHKiG.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+&lt;h4 id=&quot;流程分析&quot;&gt;流程分析&lt;/h4&gt;
+&lt;ol&gt;
+  &lt;li&gt;一个mr程序启动的时候，最先启动的是MRAppMaster，MRAppMaster启动后根据本次job的描述信息，计算出需要的maptask实例数量，然后向集群申请机器启动相应数量的maptask进程&lt;/li&gt;
+  &lt;li&gt;maptask进程启动之后，根据给定的数据切片范围进行数据处理，主体流程为：
+    &lt;ol&gt;
+      &lt;li&gt;利用客户指定的inputformat来获取RecordReader读取数据，形成输入&amp;lt;K,V&amp;gt;对&lt;/li&gt;
+      &lt;li&gt;将输入KV对传递给客户定义的map()方法，做逻辑运算，并将map()方法输出的KV对收集到缓存&lt;/li&gt;
+      &lt;li&gt;将缓存中的KV对按照K分区排序后不断溢写到磁盘文件&lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;MRAppMaster监控到所有maptask进程任务完成之后，会根据客户指定的参数启动相应数量的reducetask进程，并告知reducetask进程要处理的数据范围（数据分区）&lt;/li&gt;
+  &lt;li&gt;Reducetask进程启动之后，根据MRAppMaster告知的待处理数据所在位置，从若干台maptask运行所在机器上获取到若干个maptask输出结果文件，并在本地进行重新归并排序，然后按照相同key的KV为一个组，调用客户定义的reduce()方法进行逻辑运算，并收集运算输出的结果KV，然后调用客户指定的outputformat将结果数据输出到外部存储&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;maptask并行度的决定机制&quot;&gt;MapTask并行度的决定机制&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;一个job的map阶段并行度由客户端在提交job时决定&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;客户端对map阶段并行度的规划的基本逻辑为:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;将待处理数据执行逻辑切片（即按照一个特定切片大小，将待处理数据划分成逻辑上的多个split），然后&lt;strong&gt;每一个split分配一个mapTask并行实例处理&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;逻辑切片规划描述文件，由FileInputFormat实现类的getSplits()方法完成：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/3Fb2Fm7Fb3.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;fileinputformat切片机制&quot;&gt;FileInputFormat切片机制&lt;/h4&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;切片定义在InputFormat类中的getSpilt()方法&lt;/li&gt;
+  &lt;li&gt;FileInputFormat中默认的切片机制：
+    &lt;ul&gt;
+      &lt;li&gt;简单地按照文件的内容长度进行切片&lt;/li&gt;
+      &lt;li&gt;切片大小，默认等于block大小&lt;/li&gt;
+      &lt;li&gt;切片时不考虑数据集整体，而是逐个针对每一个文件单独切片&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;比如有两个待处理文件&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;file1.txt    320M
+file2.txt    10M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;经过FileInputFormat的切片机制运算后，形成的切片信息如下：&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;file1.txt.split1--  0~128
+file1.txt.split2--  128~256
+file1.txt.split3--  256~320
+file2.txt.split1--  0~10M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;FileInputFormat中切片的大小参数配置&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;计算切片大小逻辑：Math.max(minSize, Math.min(maxSize, blockSize))&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;minsize：默认值：1  
+  	配置参数： mapreduce.input.fileinputformat.split.minsize 
+maxsize：默认值：Long.MAXValue  
+    配置参数：mapreduce.input.fileinputformat.split.maxsize
+ 
+blocksize
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;&lt;strong&gt;默认情况下，切片大小=blocksize&lt;/strong&gt;。如果最后一块大小小于切片大小的1.1倍，会放在同一个块&lt;/p&gt;
+
+&lt;h3 id=&quot;mapreduce中的combiner&quot;&gt;MapReduce中的Combiner&lt;/h3&gt;
+&lt;p&gt;Combiner的使用要非常谨慎&lt;/p&gt;
+
+&lt;p&gt;因为combiner在mapreduce过程中可能调用也肯能不调用，可能调一次也可能调多次&lt;/p&gt;
+
+&lt;p&gt;所以：combiner使用的原则是：有或没有都不能影响业务逻辑&lt;/p&gt;
+
+&lt;h4 id=&quot;combiner简介&quot;&gt;Combiner简介&lt;/h4&gt;
+&lt;ol&gt;
+  &lt;li&gt;combiner是MR程序中Mapper和Reducer之外的一种组件&lt;/li&gt;
+  &lt;li&gt;combiner组件的父类就是Reducer&lt;/li&gt;
+  &lt;li&gt;combiner和reducer的区别在于运行的位置：
+    &lt;ul&gt;
+      &lt;li&gt;Combiner是在每一个maptask所在的节点运行;&lt;/li&gt;
+      &lt;li&gt;Combiner是在每一个maptask所在的节点运行;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;combiner的意义就是对每一个maptask的输出进行局部汇总，以减小网络传输量&lt;/li&gt;
+  &lt;li&gt;combiner能够应用的前提是不能影响最终的业务逻辑&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;combiner的输出kv应该跟reducer的输入kv类型要对应起来&lt;/p&gt;
+
+&lt;h4 id=&quot;具体实现步骤&quot;&gt;具体实现步骤&lt;/h4&gt;
+&lt;ol&gt;
+  &lt;li&gt;自定义一个combiner继承Reducer，重写reduce方法&lt;/li&gt;
+  &lt;li&gt;在job中设置：  job.setCombinerClass(CustomCombiner.class)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;mapreduce的shuffle机制&quot;&gt;MapReduce的shuffle机制&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;mapreduce中，map阶段处理的数据如何传递给reduce阶段，是mapreduce框架中最关键的一个流程，这个流程就叫shuffle。&lt;/li&gt;
+  &lt;li&gt;shuffle：洗牌、发版、混洗–核心机制：数据分区，排序，缓存。&lt;/li&gt;
+  &lt;li&gt;具体来说：就是将maptask输出的处理结果数据，分发给reducetask，并在分发的过程中，对数据按key进行了分区和排序。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;详细过程&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/6C2kDE0946.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;maptask收集我们的map()方法输出的&amp;lt;k,v&amp;gt;对，放到缓形缓冲区（数组）。&lt;/li&gt;
+  &lt;li&gt;从内存缓冲区不断溢出本地磁盘（环形缓冲区需要进行排序，以不会写满在溢出），可能会溢出多个文件。&lt;/li&gt;
+  &lt;li&gt;多个溢出文件会被合并成大的溢出文件。&lt;/li&gt;
+  &lt;li&gt;在溢出过程中，及合并的过程中，都要调用partitoner进行分组和针对key进行排序。&lt;/li&gt;
+  &lt;li&gt;reducetask根据自己的分区号，去各个maptask机器上取相应的结果分区数。&lt;/li&gt;
+  &lt;li&gt;reducetask会取到同一个分区的来自不同maptask的结果文件，reducetask会将这些文件再进行合并（归并排序）。&lt;/li&gt;
+  &lt;li&gt;合并成大文件后，shuffle的过程也就结束了，后面进入reducetask的逻辑运算过程（从文件中取出一个一个的键值对group，调用用户自定义的reduce()方法）。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Shuffle中的缓冲区大小会影响到mapreduce程序的执行效率，原则上说，缓冲区越大，磁盘io的次数越少，执行速度就越快。  &lt;br /&gt;
+缓冲区的大小可以通过参数调整,  参数：io.sort.mb  默认100M&lt;/p&gt;
+
+&lt;h3 id=&quot;mapreduce中有序列化&quot;&gt;MapReduce中有序列化&lt;/h3&gt;
+
+&lt;p&gt;Java的序列化太冗余不好，hadoope有一套自己的序列化机制（Writable）&lt;/p&gt;
+
+&lt;h4 id=&quot;自定义序列化接口&quot;&gt;自定义序列化接口&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;不需要比较只需要继承Writable即可&lt;/li&gt;
+  &lt;li&gt;如果需要将自定义的bean放在key中传输，则还需要实现comparable接口，因为&lt;strong&gt;mapreduce框中的shuffle过程一定会对key进行排序&lt;/strong&gt;,此时，自定义的bean实现的接口应该是：
+&lt;code class=&quot;highlighter-rouge&quot;&gt;public  class  FlowBean  implements  WritableComparable&amp;lt;FlowBean&amp;gt; &lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/**
+	 * 反序列化的方法，反序列化时，从流中读取到的各个字段的顺序应该与序列化时写出去的顺序保持一致
+	 */
+	@Override
+	public void readFields(DataInput in) throws IOException {
+		upflow = in.readLong();
+		dflow = in.readLong();
+		sumflow = in.readLong();
+	}
+	/**
+	 * 序列化的方法
+	 */
+	@Override
+	public void write(DataOutput out) throws IOException {
+		out.writeLong(upflow);
+		out.writeLong(dflow);
+		//可以考虑不序列化总流量，因为总流量是可以通过上行流量和下行流量计算出来的
+		out.writeLong(sumflow);
+
+	}
+	
+	@Override
+	public int compareTo(FlowBean o) {
+		
+		//实现按照sumflow的大小倒序排序
+		return sumflow&amp;gt;o.getSumflow()?-1:1;
+	}
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;mapreduce中的分区partitioner&quot;&gt;Mapreduce中的分区Partitioner&lt;/h3&gt;
+
+&lt;p&gt;Mapreduce中会将map输出的kv对，按照相同key分组，然后分发给不同的reducetask&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;默认的分发规则为：根据key的hashcode%reducetask数来分发&lt;/strong&gt;。 
+自定义Partitioner类需要继承抽象类CustomPartitioner 
+然后在job对象中，设置自定义partitioner： job.setPartitionerClass(CustomPartitioner.class)&lt;/p&gt;
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hadoop/2018/12/MapReduce-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hadoop/2018/12/MapReduce-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.html</guid>
+        
+        <category>Hadoop</category>
+        
+        
+        <category>Hadoop</category>
+        
+      </item>
+    
+      <item>
+        <title>[Hadoop]安装方式</title>
+        <description>&lt;h2 id=&quot;下载&quot;&gt;下载&lt;/h2&gt;
+
+&lt;p&gt; 下载地址 &lt;code class=&quot;highlighter-rouge&quot;&gt;archive.apache.org/dist/hadoop/common/&lt;/code&gt; 
+ 相关文档&lt;code class=&quot;highlighter-rouge&quot;&gt;http://hadoop.apache.org/docs&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;linux相关配置&quot;&gt;Linux相关配置&lt;/h3&gt;
+
+&lt;h5 id=&quot;1-yum源&quot;&gt;1. yum源&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1. 上传包含安装包的文件到节点
+2. 安装httpd包
+rpm -ivh  apr-1.4.8-3.el7.x86_64.rpm 
+rpm -ivh  apr-util-1.5.2-6.el7.x86_64.rpm 
+rpm -ivh  httpd-tools-2.4.6-40.el7.centos.x86_64.rpm 
+rpm -ivh  mailcap-2.1.41-2.el7.noarch.rpm
+rpm -ivh  httpd-2.4.6-40.el7.centos.x86_64.rpm
+3. 启动httpd进程，并设置为开机启动
+systemctl   start    httpd
+systemctl   enable   httpd
+4. 安装createrepo包，用来构建软件仓库
+rpm -ivh  deltarpm-3.6-3.el7.x86_64.rpm 
+rpm -ivh  python-deltarpm-3.6-3.el7.x86_64.rpm 
+rpm -ivh  libxml2-python-2.9.1-5.el7_1.2.x86_64.rpm 
+rpm -ivh  libxml2-2.9.1-5.el7_1.2.x86_64.rpm 
+rpm -ivh  createrepo-0.9.9-23.el7.noarch.rpm 
+5.创建软链接到硬盘中的包文件夹
+http工作目录是/var/www/html/，需要设置一个目录指向包文件夹的地址
+cd  /var/www/html/
+mkdir  /var/www/html/CentOS7.2/
+ln -s  /data01/Packages   /var/www/html/CentOS7.2/Packages
+chmod 755 -R /var/www/html/CentOS7.2/Packages
+6.使用上面安装的createrepo来创建仓库
+createrepo  /var/www/html/CentOS7.2/Packages
+7.关闭防火墙
+setenforce 0 
+systemctl   stop    firewalld
+访问IP地址下的/CentOS7.2/Packages能看到包并可以下载就可以了。
+8.所有主机都配置一下repo文件
+文件夹地址在/etc/yum.repos.d/
+1.备份原来的repo源文件
+cd /etc/yum.repos.d/
+mkdir  bak
+mv CentOS-*.repo  bak/
+2.创建自己的repo文件，写入内容
+vi  base.repo
+
+[base]
+name=CentOS-Packages
+baseurl=http://192.168.33.201/CentOS7.2/Packages/
+gpgkey=
+path=/
+enabled=1
+gpgcheck=0
+3.清理yum缓存，重新构建缓存，测试安装一个包
+yum clean all
+yum makecache
+yum list|grep vim（举个例子，把包里面有vim的包都列出来）
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;2-禁用selinux否则重启之后可能会无法访问到yum的软件库&quot;&gt;2. 禁用SELinux，否则重启之后可能会无法访问到yum的软件库&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1.setenforce 0	临时关闭SELinux
+2.修改/etc/selinux/config中的SELINUX=disabled
+	sed -i 's/^SELINUX=.*/SELINUX=disabled/g'   /etc/selinux/config
+	sed -i 's/^SELINUX=.*/SELINUX=disabled/g'   /etc/sysconfig/selinux
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;3关闭thp影响hadoop集群的性能&quot;&gt;3.关闭THP（影响hadoop集群的性能）&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;echo never &amp;gt; /sys/kernel/mm/transparent_hugepage/enabled
+echo never &amp;gt; /sys/kernel/mm/transparent_hugepage/defrag
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;4修改swappiness&quot;&gt;4.修改swappiness&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;这个值表示剩余多少内存的时候使用磁盘，设置为0即最大限度的使用内存
+echo &quot;vm.swappiness=0&quot; &amp;gt;&amp;gt; /etc/sysctl.conf 
+sysctl -p    ##让配置生效
+cat /proc/sys/vm/swappiness
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;5修改主机名配置主机名文件ssh免密登陆&quot;&gt;5.修改主机名，配置主机名文件，ssh免密登陆&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1.修改主机名
+	hostnamectl --static set-hostname hadoop1
+2.配置主机名文件
+	vi /etc/hosts
+3.关闭防火墙即开机关闭
+	systemctl stop firewalld.service
+	systemctl disable firewalld.service
+4.配置ssh免密登陆
+	ssh-keygen
+	ssh-copy-id 主机名
+
+远程复制:
+1. 复制文件（本地&amp;gt;&amp;gt;远程：scp /cloud/data/test.txt root@10.21.156.6:/cloud/data/
+2. 复制文件（远程&amp;gt;&amp;gt;远程：scp root@10.21.156.6:/cloud/data/test.txt /cloud/data/
+3. 复制目录（本地&amp;gt;&amp;gt;远程：scp -r /cloud/data root@10.21.156.6:/cloud/data/
+4. 复制目录（远程&amp;gt;&amp;gt;本地：scp -r root@10.21.156.6:/cloud/data/ /cloud/data
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;6设置时区统一时间&quot;&gt;6.设置时区，统一时间&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1.所有节点设置时区：
+timedatectl set-timezone &quot;Asia/Shanghai&quot;
+2.统一时间，“对表”，即以主节点的时间为准
+1.所有机器安装ntp
+	yum -y install ntp
+2.修改主节点配置文件，所有机器时间以主节点（如hadoop1）时间为准，
+	1.所有节点备份原始配置文件
+		cp /etc/ntp.conf /etc/ntp.conf.bak
+	2.修改主节点hadoop1配置
+		vi /etc/ntp.conf
+			# server 0.centos.pool.ntp.org iburst
+			# server 1.centos.pool.ntp.org iburst
+			# server 2.centos.pool.ntp.org iburst
+			# server 3.centos.pool.ntp.org iburst 
+			server 127.127.1.1
+	3.重启ntpd进程，设置开机自启
+		systemctl restart ntpd
+		systemctl enable ntpd
+3.在其他节点上指定以hadoop1为准来进行时间校准
+	ntpdate hadoop1
+	systemctl start ntpd
+	crontab	定时执行脚本/命令
+4.修改其他节点上的配置文件（同主节点修改步骤）
+	vi /etc/ntp.conf
+		# server 0.centos.pool.ntp.org iburst
+		# server 1.centos.pool.ntp.org iburst
+		# server 2.centos.pool.ntp.org iburst
+		# server 3.centos.pool.ntp.org iburst 
+		server 192.168.33.201
+5.其他节点上重启ntpd进程，并设置成开机自启
+	systemctl restart ntpd
+	systemctl enable ntpd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;hadoop相关&quot;&gt;Hadoop相关&lt;/h2&gt;
+&lt;ol&gt;
+  &lt;li&gt;安装jdk
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;JAVA_HOME
+CDH中spark会默认到/usr/java/default目录下去找jdk，所以一般就安装在/usr/java目录下
+export JAVA_HOME=/usr/java/jdk1.8.0_25
+export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+export PATH=$JAVA_HOME/bin:$PATH
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;解压到指定目录&lt;/li&gt;
+  &lt;li&gt;修改配置文件
+```
+1.配置jdk的地址，etc/hadoop/hadoop-env.sh文件
+ # set to the root of your Java installation
+ export JAVA_HOME=/usr/java/latest&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;standalone本地运行的操作
+	  $ mkdir input
+	  $ cp etc/hadoop/&lt;em&gt;.xml input
+	  $ bin/hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.7.6.jar wordcount input output
+	  $ cat output/&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;2.配置hdfs，etc/hadoop/core-site.xml文件
+新建文件夹data/tmp，用来存放临时文件&lt;/p&gt;
+&lt;configuration&gt;
+	&lt;property&gt;
+		&lt;name&gt;fs.defaultFS&lt;/name&gt;
+		## 指定了namenode的节点
+		&lt;value&gt;hdfs://hadoop1:9001&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;property&gt;
+		&lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
+		&lt;value&gt;/opt/modules/hadoop-2.7.7/data/tmp&lt;/value&gt;
+	&lt;/property&gt;
+&lt;/configuration&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;etc/hadoop/hdfs-site.xml文件，配置副本数
+&amp;lt;configuration&amp;gt;
+	&amp;lt;property&amp;gt;
+		&amp;lt;name&amp;gt;dfs.replication&amp;lt;/name&amp;gt;
+		&amp;lt;value&amp;gt;1&amp;lt;/value&amp;gt;
+	&amp;lt;/property&amp;gt;
+	# python操作hdfs时需要获取权限
+	&amp;lt;property&amp;gt; 
+		&amp;lt;name&amp;gt;dfs.permissions&amp;lt;/name&amp;gt; 
+		&amp;lt;value&amp;gt;false&amp;lt;/value&amp;gt; 
+	&amp;lt;/property&amp;gt;
+	## 指定secondarynamenode节点
+	&amp;lt;property&amp;gt;
+		&amp;lt;name&amp;gt;dfs.namenode.secondary.http-address&amp;lt;/name&amp;gt;
+		&amp;lt;value&amp;gt;节点地址:50090&amp;lt;/value&amp;gt;
+	&amp;lt;/property&amp;gt;
+&amp;lt;/configuration&amp;gt;
+
+3.首次启动，namenode需要格式化
+	bin/hdfs namenode -format
+	
+hdfs的web监控端口是50070
+		
+4.配置yarn
+etc/hadoop/mapred-site.xml文件
+	&amp;lt;configuration&amp;gt;
+		&amp;lt;property&amp;gt;
+			&amp;lt;name&amp;gt;mapreduce.framework.name&amp;lt;/name&amp;gt;
+			&amp;lt;value&amp;gt;yarn&amp;lt;/value&amp;gt;
+		&amp;lt;/property&amp;gt;
+		## 配置historyserver
+		&amp;lt;property&amp;gt;
+			&amp;lt;name&amp;gt;mapreduce.jobhistory.address&amp;lt;/name&amp;gt;
+			&amp;lt;value&amp;gt;节点主机名:10020&amp;lt;/value&amp;gt;
+		&amp;lt;/property&amp;gt;
+		&amp;lt;property&amp;gt;
+			&amp;lt;name&amp;gt;mapreduce.jobhistory.webapp.address&amp;lt;/name&amp;gt;
+			&amp;lt;value&amp;gt;节点主机名:19888&amp;lt;/value&amp;gt;
+		&amp;lt;/property&amp;gt;
+	&amp;lt;/configuration&amp;gt;
+
+etc/hadoop/yarn-site.xml文件
+	&amp;lt;configuration&amp;gt; 
+    	&amp;lt;property&amp;gt;
+    		&amp;lt;name&amp;gt;yarn.nodemanager.aux-services&amp;lt;/name&amp;gt;
+    		&amp;lt;value&amp;gt;mapreduce_shuffle&amp;lt;/value&amp;gt;
+    	&amp;lt;/property&amp;gt;
+    	## 指定resourcemanager节点
+    	&amp;lt;property&amp;gt;
+    		&amp;lt;name&amp;gt;yarn.resourcemanager.hostname&amp;lt;/name&amp;gt;
+    		&amp;lt;value&amp;gt;主节点的hostname&amp;lt;/value&amp;gt;
+    	&amp;lt;/property&amp;gt;
+		## 日志聚集功能开启
+		&amp;lt;property&amp;gt;
+			&amp;lt;name&amp;gt;yarn.log-aggregation-enable&amp;lt;/name&amp;gt;
+			&amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
+		&amp;lt;/property&amp;gt;
+		## 日志文件保存的时间，以秒为单位
+		&amp;lt;property&amp;gt;
+			&amp;lt;name&amp;gt;yarn.log-aggregation.retain-seconds&amp;lt;/name&amp;gt;
+			&amp;lt;value&amp;gt;640800&amp;lt;/value&amp;gt;
+		&amp;lt;/property&amp;gt;
+	&amp;lt;/configuration&amp;gt;
+		
+slaves: 指定启动的脚本，如启动start-dfs.sh
+	指定datanode和nodemanager是哪些节点
+yarn的web监控端口是8088
+		
+5.配置文件的类别
+	1.默认配置文件:四个模块相对应的jar中，$HADOOP_HOME/share/hadoop/...
+		core-default.xml
+		hdfs-default.xml
+		yarn-default.xml
+		mapred-default.xml
+	2.自定义配置文件，$HADOOP_HOME/etc/hadoop/
+		core-site.xml
+		hdfs-site.xml
+		yarn-site.xml
+		mapred-site.xml
+		
+6.启动方式
+	1.各个节点服务组件逐一启动
+		hadoop-daemon.sh start namenode
+		hadoop-daemon.sh start datanode
+		sbin/mr-jobhistory-daemon.sh start historyserver
+	2.各个模块统一启动
+		hadoop1:start-dfs.sh
+		hadoop2:start-yarn.sh	mr-jobhistory-daemon.sh start historyserver
+			
+	3.所有节点服务统一启动
+		start-all.sh（不建议使用）
+		因为一般实际情况下namenode和resourcemanager不建议配置在一台机器上
+
+7.查看安全模式
+	hdfs dfsadmin -safemode get
+	
+8.其他
+	yarn默认的配置，cpu有8核，内存为8G，可以配置
+		
+	apache slider 动态的yarn
+		把已经存在的分布式框架运行在yarn上
+	
+9.mr
+	以wordcount为例：
+	map：映射，可以高度并行
+		输入输出形式都是键值对
+			输入的key，value对，key为字符偏移量，value为字符串类型
+			
+	reduce：合并
+	
+	mapreduce优化
+		1.reduce的个数，job.reduces 默认为1个
+		2.shuffle过程的compress和combiner
+		3.shuffle的各种参数调节 ```
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上传到工作目录:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hdfs dfs -put /etc/profile /file
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;strong&gt;参考：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://hadoop.apache.org/docs/r2.9.2/&quot;&gt;Hadoop官方文档&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hadoop/2018/12/Hadoop-%E5%AE%89%E8%A3%85%E6%96%B9%E5%BC%8F.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hadoop/2018/12/Hadoop-%E5%AE%89%E8%A3%85%E6%96%B9%E5%BC%8F.html</guid>
+        
+        <category>Hadoop</category>
+        
+        
+        <category>Hadoop</category>
+        
+      </item>
+    
+      <item>
+        <title>[Hadoop]基础知识</title>
+        <description>&lt;h3 id=&quot;1-hadoop&quot;&gt;1 Hadoop&lt;/h3&gt;
+
+&lt;p&gt;Hadoop可以看做将MapReduce计算转移到存储有部分数据的各台机器上。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;三大设计目标：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;为只需要几分钟或几小时就能完成的任务提供服务。&lt;/li&gt;
+  &lt;li&gt;运用于同一个内部有高速网络连接的数据中心内。&lt;/li&gt;
+  &lt;li&gt;数据中心内的计算机都是可靠的、专门的硬件&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;11-普通分析&quot;&gt;1.1 普通分析&lt;/h4&gt;
+
+&lt;p&gt;并行处理程序进行数据分析：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;将任务划分成大小相同的作业。&lt;/li&gt;
+  &lt;li&gt;合并各个独立进程的运行结果，可能还需要进行额外处理。&lt;/li&gt;
+  &lt;li&gt;受限单台计算机的处理能力。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;12-使用hadoop来分析数据&quot;&gt;1.2 使用Hadoop来分析数据&lt;/h4&gt;
+
+&lt;p&gt;MapReduce任务过程分两个阶段：都以键-值对做为输入和输出&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;map阶段：数据准备
+    &lt;ul&gt;
+      &lt;li&gt;提取想要的字段，以及去除已损数据；&lt;/li&gt;
+      &lt;li&gt;输入的是NCDC原始数据。默认为文本格式&lt;/li&gt;
+      &lt;li&gt;键(key)是文件中的行偏移量，值(value)为文本格式的数据&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;reduce阶段：数据处理
+    &lt;ul&gt;
+      &lt;li&gt;比如：这个处理基于键-值对进行排序和分组&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt; Unix管线模拟整个MapReduce的逻辑数据流
+&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/6Imgg309g2.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;hadoop将作业分成若干个任务(task)来执行：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;map任务&lt;/li&gt;
+  &lt;li&gt;reduce任务&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;由YARN进行调度，第一个分片都会构建一个map任务&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;一个Reduce任务的MapReduce数据流：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/97i6I30LmC.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;如果有多个map任务就会针对输出进行分区(partintion),即为每一个reduce任务建一个分区&lt;/p&gt;
+
+&lt;p&gt;多个任务的数据流图：shuffle&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/hi48HeLbJf.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;数据处理可以完全并行（无需混洗）&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/hi48HeLbJf.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;combiner函数&quot;&gt;combiner函数&lt;/h4&gt;
+
+&lt;p&gt;​    可以针对map任务的输出指定一个 combiner ,combiner 函数的输出作为reduce 函数的输入。&lt;/p&gt;
+
+&lt;h2 id=&quot;2-hdfs&quot;&gt;2 HDFS&lt;/h2&gt;
+&lt;p&gt;HDFS是Hadoop的文件系统，实际上Hadoop是一个综合性的文件系统抽象。&lt;/p&gt;
+
+&lt;h4 id=&quot;21-数据块&quot;&gt;2.1 数据块&lt;/h4&gt;
+
+&lt;p&gt;HDFS块(block)默认为128M(以前的版本默认是64M)。与面向单一磁盘文件不同的是，HDFS中小于一个块大小的文件不会占据整个空间。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;HDFS的块比磁盘的块大，目的是为了最小化寻址开销。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;优点：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;文件大小可以大于网络中任意一个磁盘容量&lt;/li&gt;
+  &lt;li&gt;使用抽象块而非整个文件作为存储单元，简化了存储子系统的设计&lt;/li&gt;
+  &lt;li&gt;适合用于数据备份&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;22-namenode和datanode&quot;&gt;2.2 namenode和datanode&lt;/h4&gt;
+
+&lt;p&gt;客户端(client)：代表用户通过与namenode和datanode交互访问整个文件系统。&lt;/p&gt;
+
+&lt;h5 id=&quot;221-namenode-管理节点&quot;&gt;2.2.1 namenode (管理节点)&lt;/h5&gt;
+
+&lt;p&gt;  管理着整个HDFS文件系统的元数据。记录每个文件中各个块所在的数据节点信息，它并不永久保存块的位置信息，因为这些信息会在系统启动时根据数据节点信息重建。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;初始化:
+    &lt;ul&gt;
+      &lt;li&gt;生成fsimage 和 blockpool 编号&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;启动：
+    &lt;ul&gt;
+      &lt;li&gt;把残留的edits和fsiamge合并&lt;/li&gt;
+      &lt;li&gt;datanode向namenode进行汇报（安全模式），元数据的校验，验证datanode是否正常启动之后 ，datanode会和namenode保持心跳的交换。 默认保持10S的心中信息&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;元数据大概分两个层次：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Namespace管理层，负责管理文件系统中的树状目录结构以及文件与数据块的映射关系
+    &lt;ul&gt;
+      &lt;li&gt;Namespace管理的元数据除内存常驻外，也会周期Flush到持久化设备上FsImage文件&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;BolcksMap块管理层，负责管理文件系统中文件的物理块与实际存储位置的映射关系。
+    &lt;ul&gt;
+      &lt;li&gt;BlocksMap元数据只在内存中存在&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;​       当NameNode发生重启，首先从持久化设备中读取FsImage构建Namespace，之后根据DataNode的汇报信息重新构造BlocksMap。&lt;/p&gt;
+
+&lt;p&gt;HDFS对namenode两种容错机制:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;备份那些组成文件系统元数据持久状态的文件。Hadoop可以通过配置使namenode在多个文件系统上保存元数据的持久状态。&lt;/li&gt;
+  &lt;li&gt;辅助的namenode(Second NameNode)，但它不能作namenode。它会定期合并编辑日志(edits log)与命名空间镜像(fsimage),以防止日志过大。这个辅助namenode一般会在另一台单独的物理计算机上运行，因为它需要占用大量CPU时间，并且需要与namenode一样多的内存来执行合并操作。但是，辅助namenode保存的状态滞后于主节点，所以在主节点全部失效时，难免会丢失部分数据。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h6 id=&quot;namenode安全模式safenode&quot;&gt;namenode安全模式(safenode)&lt;/h6&gt;
+&lt;ul&gt;
+  &lt;li&gt;namenode在刚启动时，内存中只有文件和文件的块id及副本数量，不知道datanode在哪里。&lt;/li&gt;
+  &lt;li&gt;namenode需要等待所有datanode向他汇报自身持有的块信息，namenode才能在元数据中补全文件块信息中的位置信息。&lt;/li&gt;
+  &lt;li&gt;只有当namenode长到99.8%的块位置信息，才会即出安全模式，正常对外提供服务。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;222-datanode-工作节点&quot;&gt;2.2.2 datanode (工作节点)&lt;/h4&gt;
+
+&lt;p&gt;  是文件系统的工作节点。它们根据需要存储并检索数据块（受客户端或namenode调试），并定期向namenode发送它们所存储的块的列表。&lt;/p&gt;
+
+&lt;p&gt;datanode为什么要定期汇报自身block信息:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;当集群中某些副本失效时，集群如何恢复block初始副本数量的问题。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;datanode上保存文件，是以block的形式保存。block默认大小为128M。块的大小根据上传文件的大小/block的大小。&lt;/p&gt;
+
+&lt;p&gt;data保存时，会有一个副本机制，默认是会为每个文件保存3份(dfs.replication)。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;block的分配原则(网络距离越近，优先程度越高)&lt;/strong&gt;:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;和客户端在同一个机架的节点&lt;/li&gt;
+  &lt;li&gt;和客户端在不同机架的节点&lt;/li&gt;
+  &lt;li&gt;和客户端在同一个机架的其他一个节点&lt;/li&gt;
+  &lt;li&gt;负载均衡&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;datanode故障无法与namenode通信&lt;/strong&gt;:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;namenode不会立即判断datanode死亡，要经过一段时间，这段时间称作超时时长。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;datanode为什么要用block的形式来存放数据？&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;大文件存放无压力&lt;/li&gt;
+  &lt;li&gt;高可用&lt;/li&gt;
+  &lt;li&gt;blocke有规律的存储和读取&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;鉴于block保存机制，使用hdfs来存放文件的时候，需要注意些什么？&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;hdfs更适合放大文件。&lt;/li&gt;
+  &lt;li&gt;3ktxt，block形式存放，占用空间是依然是3k，但是会占用一个block。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;hdfs dfsadmin -report&lt;/code&gt; ：可以通过此命令查看块信息&lt;/p&gt;
+
+&lt;h4 id=&quot;23-hdfs高可用&quot;&gt;2.3 HDFS高可用&lt;/h4&gt;
+
+&lt;p&gt;默认没有高可用机制。可以通过配置实现。&lt;/p&gt;
+
+&lt;p&gt;活动-备用(active-standby)namenode。当活动namenode失效，备用namenode就会接管它的任务，并开始服务于客户端的请求，不会有任务明显中断。&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;namenode之间需要通过高可以用共享存储编辑日志的共享。&lt;/li&gt;
+  &lt;li&gt;datanode需要同时向两个namenode发送数据块处理报告。数据块的映射信息存储在namenode的内存中。&lt;/li&gt;
+  &lt;li&gt;辅助namenode的角色被备用namenode所包含，备用namenode为活动namenode命名空间设置周期性检查点。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;231-故障切换与规避&quot;&gt;2.3.1 故障切换与规避&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;故障转移控制器(failover controller):  管理将活动的namenode转移为备用namenode的转换过程。
+    &lt;ul&gt;
+      &lt;li&gt;默认使用ZooKeeper来确保有且仅有一个活动namenode。&lt;/li&gt;
+      &lt;li&gt;第一个namenode运行着一个轻量级的故障转移控制器，监视宿主机namenode是否失效，并在namenode失效时进行故障切换。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;平稳故障转移(graceful failover):  故障转移器可以组织两个namenode有序地切换。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;规避(fencing): 以确保先前活动的namenode不会执行危害系统并导致系统崩溃的操作。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;24-命令行接口&quot;&gt;2.4 命令行接口&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;fs.defaultFS, 设置为 hdfs://localhost/,用于设置hadoop的默认文件系统。HDFS的守护程序通过该属性来确定HDFS namenode的主机和端口。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;fs.replication, HDFS默认设置将文件系统的复本。设为1时，单独一个datanode上运行，HDFS将无法复制到3个datanode。设置为5时，如果节点只有3个，它还是只会复制为3份。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h5 id=&quot;241-文件系统的基本操作&quot;&gt;2.4.1 文件系统的基本操作&lt;/h5&gt;
+
+&lt;p&gt;上传文件&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bin/hadoop fs -put tmp.txt hdfs://hadoop1:9001/
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;下载文件&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bin/hadoop fs -get hdfs://hadoop1:9001/tmp.txt
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;从本地将一个文件复制到HDFS:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;默认域名在core-site.xml中的defaultFS指定
+bin/hadoop fs -copyFromLocal input/core-site.xml hdfs://hadoop1/user/root/core.xml
+
+省略, hdfs://hadoop1，因为该项在core-site.xml指定。
+bin/hadoop fs -copyFromLocal input/core-site.xml /user/root/core.xml
+
+相对路径(默认为/user/root)
+bin/hadoop fs -copyFromLocal input/core-site.xml core.xml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;将文件复制回本地，并查检是否一致&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+bin/hadoop fs -copyToLocal core.xml input/core-site.copy.xml
+
+md5sum input/core-site.copy.xml input/core-site.xml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;新建一个目录:&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bin/hadoop fs -mkdir books
+默认在/user/root(用户)目录下
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;显示/user/root下的目录结构&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hadoop fs -ls .
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;242-hdfs权限&quot;&gt;2.4.2 HDFS权限&lt;/h4&gt;
+
+&lt;p&gt;启动权限 dfs.permissions.enabled属性&lt;/p&gt;
+
+&lt;p&gt;超级用户是namenode进程的标识。对于超级用户，系统不会执行任何检查。&lt;/p&gt;
+
+&lt;h3 id=&quot;3-数据流&quot;&gt;3 数据流&lt;/h3&gt;
+
+&lt;h4 id=&quot;31-文件读取java-api式&quot;&gt;3.1 文件读取（JAVA API式）&lt;/h4&gt;
+
+&lt;p&gt;HDFS、namenode、datanode之间的数据流交互:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/mhmdc20LkG.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;client通过&lt;code class=&quot;highlighter-rouge&quot;&gt;FileSystem&lt;/code&gt;对象(对于&lt;code class=&quot;highlighter-rouge&quot;&gt;hdfs&lt;/code&gt;， &lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;)的open()方法打开文件。&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem &lt;/code&gt;通过远程调用（RPC）来调用namenode，确定文件起始块的位置。对于每一个块, namenode返回该块副本的datanode地址。datanode根据与client的距离来排序。&lt;/li&gt;
+  &lt;li&gt;对&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;类返回的&lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataInputStream&lt;/code&gt;(文件定位输入流)类，调用&lt;code class=&quot;highlighter-rouge&quot;&gt;read()&lt;/code&gt;方法。根据namenode返回的该块datanode地址，链接最近的文件中第一个块所在的datanode。&lt;/li&gt;
+  &lt;li&gt;反复调用&lt;code class=&quot;highlighter-rouge&quot;&gt;read()&lt;/code&gt;方法，可以将数据从datanode传输到客户端&lt;/li&gt;
+  &lt;li&gt;到达块的末端时，&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSInputStream&lt;/code&gt;(&lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataInputStream&lt;/code&gt;类封装的对象)关闭与datanode的链接，然后寻找下一个块的最佳datanode。&lt;/li&gt;
+  &lt;li&gt;client客户端读取完成，FSDataInputStream调用close()方法&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;如果DFSInputStream在与datanode通迅时遇到错误，会尝试从这个块的另外一个邻近datanode读取数据。并记住故障的datanode, 保证后续不会反复读取该节点。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;客户端可以直接连接到datanode检索数据，且 namenode告知client每个块所在最佳的datanode。namenode只需响应位置的请求，而无需响应数据请求。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;32-网络拓扑与hadoop&quot;&gt;3.2 网络拓扑与Hadoop&lt;/h4&gt;
+
+&lt;p&gt;带宽依次递减：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;同一节点上的进程&lt;/li&gt;
+  &lt;li&gt;同一机架上的不同节点&lt;/li&gt;
+  &lt;li&gt;同一数据中心不同机架上的节点&lt;/li&gt;
+  &lt;li&gt;不同数据中心中的节点&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;例如, 假设有数据中心d1机架r1中的节点n1。该节点可以表示为/d1/r1/n1。上述四种距离描述:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;distance(/d1/r1/n1, d1/r1/n1)=0&lt;/li&gt;
+  &lt;li&gt;distance(/d1/r1/n1, d1/r1/d1)=2&lt;/li&gt;
+  &lt;li&gt;distance(/d1/r1/n1, d1/r1/d1)=4&lt;/li&gt;
+  &lt;li&gt;distance(/d1/r1/n1, d1/r1/d1)=6&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/1k5G7mkIcf.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;文件写入&quot;&gt;文件写入&lt;/h2&gt;
+&lt;p&gt;如果新建一个文件，把数据写入，最后关闭该文件。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/f994L79J3J.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;client通过对&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;对象调用&lt;code class=&quot;highlighter-rouge&quot;&gt;reate()&lt;/code&gt;来新建文件&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;对namenode创建一个RPC调用，在文件系统的命名空间中新建一个文件，此时文件还没有相应的数据块&lt;/li&gt;
+  &lt;li&gt;namenode执行各种不同的检查以确保这个文件不存在以及client新建该文件的权限。
+    &lt;ul&gt;
+      &lt;li&gt;如果检查通过，namenode就会创建新文件并记录；否则，文件创建失败并向client抛出IOException异常。&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;向客户端返回一个&lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataOutputStream&lt;/code&gt;对象&lt;/li&gt;
+      &lt;li&gt;由此 client 开始写入数据。&lt;/li&gt;
+      &lt;li&gt;类似读取事件， &lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataOutputStream&lt;/code&gt;封装一个&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSoutPutStream&lt;/code&gt;对象，该对象负责 datanode 与 namenoe之间的通信。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;  在client写入时，&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSOutputStream&lt;/code&gt;将它分成一个个数据包，并写入内部队列，&lt;strong&gt;称为“数据队列” (data queue)&lt;/strong&gt;。&lt;code class=&quot;highlighter-rouge&quot;&gt;DataStreamer &lt;/code&gt;处理数据队列，它的责任是挑选出适合存储数据复本一组datanode，并据此来要求namenode分配新的数据块。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;这&lt;strong&gt;一组datanode构成一个管线&lt;/strong&gt;。
+    &lt;ul&gt;
+      &lt;li&gt;假设复本为3，所以管线中有3个节点。&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DataStreame&lt;/code&gt;将数据包流式传输到管线中第1个datanode，该datanode存储数据包并将它发送到第2个datanode，同样第2个datanode存储该数据包并将它发送到第3个datanode。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSOutputStream&lt;/code&gt; 也维护着一个内部数据包队列来等待datanode的收到确定回执，&lt;strong&gt;称为“确认队列”(ack queue)&lt;/strong&gt;。收到管道中所有的datanode确认信息后，该数据包才会被确认队列删除。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;如果任何datanode在数据写入期间发生故障，则执行以下操作（对写入数据client透明）。&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;首先关闭管线，确认把队列中的所有数据包都添加回数据队列的最前端，以确保故障节点下游的datanode不会漏掉任何一个数据包。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;为存储在另一正常datanode的当前数据块指定一个新的标识，并将该标识传送给namenode，以便故障datanode在恢复后可以删除存储部分数据块。&lt;/li&gt;
+  &lt;li&gt;从管线中删除故障datanode, 基于两个正常datanode构建一条新管线。余下数据写入管线中正常datanode。namenode注意到复本不足时，会在另一个节点上创建一个新的复本。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;同时不排除多个datanode同时发生故障的可能性。&lt;strong&gt;只要写入了dfs.namenode.replication.min的复本(默认为1)，写操作就会成功&lt;/strong&gt;，并这个块可以在集群中异步复制，直到其达到复本数(dfs.replication的默认值 为3)。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;client完成数据的写入后，对数据流调用close()方法。&lt;/li&gt;
+  &lt;li&gt;该操作将剩余的所有数据写入datanode管线， 并联系namenode告知其文件写入完成之前，等待确认。namenode已经知道文件由哪些块组成(因为DataStreamer请求分配数据块)，所以它在返回成功之前只需等待数据块进行最小量的复制。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;复本存放问题&quot;&gt;复本存放问题&lt;/h4&gt;
+&lt;p&gt;namenode 如何选择在哪个 datanode &lt;strong&gt;存放复本&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;在运行客户端的节点上放第 1 个复本（如果客户端在集群外，就随机选择一个节点，系统会负载均衡）&lt;/li&gt;
+  &lt;li&gt;第2 个复本放在与第一个不同且随机另外选择的机架中节点上（离架）&lt;/li&gt;
+  &lt;li&gt;第 3 个复本放在与第2个复本同一个机架上， 且随机选择加一个节点。&lt;/li&gt;
+  &lt;li&gt;其他复本放在集群中随机节点上， 系统会尽量避免在同一个机架上放太多复本。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;一旦选定复本的放置位置，就根据网络拓扑结构创建一根管线。假设复本数为3。&lt;/p&gt;
+
+&lt;p&gt;​                                               &lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/8A0c3G00EC.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;参考:&lt;/strong&gt;&lt;/p&gt;
+
+&lt;Hadoop权威指南第四版&gt;
+&lt;/Hadoop权威指南第四版&gt;
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hadoop/2018/12/Hadoop-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hadoop/2018/12/Hadoop-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.html</guid>
+        
+        <category>Hadoop</category>
+        
+        
+        <category>Hadoop</category>
+        
+      </item>
+    
+      <item>
+        <title>[HDFS]高可用</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;它需要zookeeper的调度，首先配置zookeeper&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;hdfs-ha热备不需要secondarynamenode&quot;&gt;HDFS HA（热备、不需要secondarynamenode）&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;namenode active 主要的，活动的&lt;/li&gt;
+  &lt;li&gt;namenode standby(backup) 备用状态&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;问题起因&quot;&gt;问题起因：&lt;/h4&gt;
+&lt;ol&gt;
+  &lt;li&gt;namenode宕机，这段时间所有元数据丢失，hdfs无法提供服务。
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SPOF（single point of failure）&lt;/code&gt;单点故障即会整体故障。&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;namenode节点，有一些服务需要升级，也需要停止服务才能升级&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;解决方法&quot;&gt;解决方法&lt;/h4&gt;
+&lt;ol&gt;
+  &lt;li&gt;操作日志信息给到journalnode管理（确保两个namenode都能同步更新edits）&lt;/li&gt;
+  &lt;li&gt;配置两个namenode&lt;/li&gt;
+  &lt;li&gt;客户端的访问实际地址，会自动分配到active的namenode&lt;/li&gt;
+  &lt;li&gt;两个namenode要隔离，同一时刻只有一个namenode对外提供服务&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;配置信息&quot;&gt;配置信息&lt;/h4&gt;
+
+&lt;h5 id=&quot;etchadoophdfs-sitexml&quot;&gt;etc/hadoop/hdfs-site.xml&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+	# 对整个文件系统需要一个统称
+	&amp;lt;name&amp;gt;dfs.nameservices&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;ns1&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+	# 指明这个文件系统的namenode有哪些
+	&amp;lt;name&amp;gt;dfs.ha.namenodes.ns1&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;nn1,nn2&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+	# 指明nn1是哪个
+	&amp;lt;name&amp;gt;dfs.namenode.rpc-address.ns1.nn1&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;hadoop1:8020&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+	# 指明nn2是那个
+	&amp;lt;name&amp;gt;dfs.namenode.rpc-address.ns1.nn2&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;hadoop2:8020&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+	# 指明nn1访问地址端口
+	&amp;lt;name&amp;gt;dfs.namenode.http-address.ns1.nn1&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;hadoop1:50070&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+&amp;lt;property&amp;gt;
+	# 指明nn2访问地址端口
+	&amp;lt;name&amp;gt;dfs.namenode.http-address.ns1.nn2&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;hadoop2:50070&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+	# 共享日志在journalnode上的共享端口
+	&amp;lt;name&amp;gt;dfs.namenode.shared.edits.dir&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;qjournal://hadoop1:8485;hadoop2:8485;hadoop3:8485/ns1&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+# 配置edits在journalnode上的保存地址
+&amp;lt;property&amp;gt;
+	&amp;lt;name&amp;gt;dfs.journalnode.edits.dir&amp;lt;/name&amp;gt;
+	# 注意这里的版本信息
+	&amp;lt;value&amp;gt;/opt/programs/hadoop-2.7.7/data/dfs/jn&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+	# 配置proxy代理客户端
+	&amp;lt;name&amp;gt;dfs.client.failover.proxy.provider.ns1&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;etchadoopcore-sitexml&quot;&gt;etc/hadoop/core-site.xml&lt;/h5&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# 配置两个namenode的隔离策略
+# sshfence方式
+# 使用这种方式，必须实现ssh无密码登陆
+
+&amp;lt;property&amp;gt;
+	&amp;lt;name&amp;gt;dfs.ha.fencing.methods&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;sshfence&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+	&amp;lt;name&amp;gt;dfs.ha.fencing.ssh.private-key-files&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;/root/.ssh/id_rsa&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&amp;lt;property&amp;gt;
+    &amp;lt;name&amp;gt;fs.defaultFS&amp;lt;/name&amp;gt;
+    &amp;lt;value&amp;gt;hdfs://ns1&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h5 id=&quot;最小化安装centos版本需要在每一个节点都手动安装fence组件psmisc&quot;&gt;最小化安装CentOS版本，需要在每一个节点都手动安装fence组件psmisc&lt;/h5&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum -y install psmisc  
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;psmisc包含fuser，killall，pstree三个程序，且出现上述问题是由于我们在安装centos7的时候选择了最小化安装，默认是不安装psmics。&lt;br /&gt;
+fuser 显示使用指定文件或者文件系统的进程的PID。&lt;br /&gt;
+killall 杀死某个名字的进程，它向运行指定命令的所有进程发出信号。&lt;br /&gt;
+pstree 树型显示当前运行的进程。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;启动集群&quot;&gt;启动集群：&lt;/h4&gt;
+
+&lt;p&gt;关闭所有守护进程，清除之前残留的data/tmp/*信息&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1.启动所有的journalnode
+    sbin/hadoop-daemon.sh start journalnode
+2.nn1格式化并启动
+    bin/hdfs namenode -format
+    sbin/hadoop-daemon.sh start namenode
+3.在nn2上，同步nn1的元数据信息
+    bin/hdfs namenode -bootstrapStandby
+4.启动nn2
+    sbin/hadoop-daemon.sh start namenode
+5.启动datanode节点
+    sbin/hadoop-daemon.sh start datanode
+6.把节点设置为active
+    bin/hdfs haadmin -transitionToActive nn1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;自动故障转移借助于zookeeper&quot;&gt;自动故障转移，借助于zookeeper&lt;/h3&gt;
+&lt;ol&gt;
+  &lt;li&gt;启动时都是standby，选举一个为active&lt;/li&gt;
+  &lt;li&gt;监控 ZKFC, 给每一个namenode都增加一个ZKFC服务。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;配置&quot;&gt;配置&lt;/h4&gt;
+
+&lt;p&gt;hdfs-site.xml:增加。 打开自动故障转移&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+	&amp;lt;name&amp;gt;dfs.ha.automatic-failover.enabled&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;core-site.xml: 添加zookeeper的服务&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;property&amp;gt;
+	&amp;lt;name&amp;gt;ha.zookeeper.quorum&amp;lt;/name&amp;gt;
+	&amp;lt;value&amp;gt;hadoop1:2181,hadoop2:2181,hadoop3:2181&amp;lt;/value&amp;gt;
+&amp;lt;/property&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;启动&quot;&gt;启动&lt;/h4&gt;
+&lt;ol&gt;
+  &lt;li&gt;关闭所有hdfs服务，scp同步修改的文件&lt;/li&gt;
+  &lt;li&gt;启动zookeeper脚本，每个节点都启动. &lt;code class=&quot;highlighter-rouge&quot;&gt;bin/zkServer start&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;启动zookeeper集群， &lt;code class=&quot;highlighter-rouge&quot;&gt;sbin/hadoop-daemon.sh start journalnode&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;初始化HA在zookeeper中的状态&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bin/hdfs zkfc -formatZK -force&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;启动hdfs服务。如果直接一起启动出现通信错误，造成namenode停止，则&lt;strong&gt;需要先启动journalnode，再启动其他&lt;/strong&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;namenode节点启动zkfc服务。先在哪台节点启动zkfc，那么哪台就是active&lt;/p&gt;
+
+    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;sbin/hadoop-daemon.sh start zkfc&lt;/code&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html</guid>
+        
+        <category>HDFS</category>
+        
+        
+        <category>HDFS</category>
+        
+      </item>
+    
+      <item>
+        <title>[HDFS]上传和下载</title>
+        <description>&lt;h3 id=&quot;客户端上传数据&quot;&gt;客户端上传数据:&lt;/h3&gt;
+
+&lt;p&gt;​            &lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/20171224173355764.jpg&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;客户端与NameNode通迅&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;客户端上传一个文件，namenode请求上传文件。&lt;/li&gt;
+  &lt;li&gt;namenode响应并获取文件名，从元数据中查找/hadoop/hdfs/中是否已经存在相同文件名的文件，如果不存在则允许上传&lt;/li&gt;
+  &lt;li&gt;客户端根据配置（dfs.blocksize - 块大少、hadoop 2.x 默认为128M）将文件切成N个block。&lt;/li&gt;
+  &lt;li&gt;客户端向nameNode发出RPC请求上传第一个block，nameNode返回dataNode列表（dfs.replication - 副本个数、默认为3，需要多少个副本则返回多少个dataNode，选择dataNode主要考虑空间与距离）。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;客户端与DataNode通迅&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Client与DataNodeA建立通道，上传第一个Block&lt;/li&gt;
+  &lt;li&gt;请求建立block传输通道channel
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;DataNodeA向DataNodeB建立通道 , 通过PIPE LINE将数据传输至dataNodeB。&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;DataNodeB与dataNodeC建立通道，通过PIPE LINE将数据传输至dataNodeC。&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;客户端与dataNodeA传输完毕，dataNodeA则返回一个成功答应。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;most-import&quot;&gt;MOST IMPORT&lt;/h5&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;数据传输是以packet为单位进行传输，大小默认为64K。&lt;/li&gt;
+  &lt;li&gt;packet以chunk为单位进行校验，大小默认为512Byte。&lt;/li&gt;
+  &lt;li&gt;只要有一个副本上传成功即可，其余失败的副本，之后nameNode会做异步的同步。&lt;/li&gt;
+  &lt;li&gt;每传一个block，都需要向nameNode发出请求, 再分配客户端复本个数的datanode。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;客户端读数据&quot;&gt;客户端读数据:&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/Hdfs%E8%AF%BB%E6%96%87%E4%BB%B6%E6%B5%81%E7%A8%8B.jpg&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;读文件流程：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;应用程序通过HDFS客户端向NameNode发生远程调用请求。&lt;/li&gt;
+  &lt;li&gt;NameNode收到请求之后，返回文件的块列表信息。块列表信息中包含每个block拷贝的datanode地址。&lt;/li&gt;
+  &lt;li&gt;HDFS 客户端会选择离自己最近的那个拷贝所在的datanode来读取数据。&lt;/li&gt;
+  &lt;li&gt;数据读取完成以后，HDFS客户端关闭与当前的datanode的链接。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;参考：&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://blog.csdn.net/qq_26369213/article/details/78886055&quot;&gt;HDFS客户端上传文件流程博客&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.voidcn.com/article/p-vylwijve-brm.html&quot;&gt;HDFS读写文件流程&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html</guid>
+        
+        <category>HDFS</category>
+        
+        
+        <category>HDFS</category>
+        
+      </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Sqoop]基础知识 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[Sqoop]基础知识">
+    <meta name="keywords"  content="Sqoop">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[Sqoop]基础知识 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#Sqoop" class="post-tag">Sqoop</a>
+          
+        
+      </div>
+      <h1>[Sqoop]基础知识</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/sqoop-logo.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">Sqoop是什么以及简单流程</h2>
+    
+
+    <article class="markdown-body">
+      <h3 id="1-问题">1. 问题</h3>
+
+<blockquote>
+  <p>假设：目前正式生产环境的数据出现了错误或者是偏差（2000w）修正这些错误？</p>
+</blockquote>
+
+<p>解决：利用<strong>sqoop（数据修正）</strong></p>
+
+<h3 id="2-sqoop是什么">2. sqoop是什么</h3>
+<p>全称：SQL TO HADOOP</p>
+<blockquote>
+  <p>sqoop 是一个hadoop与关系弄数据库之间相互数据传输的工具。sqoop可以将数据从关系型数据库, (例如mysql或oracle或大型机) 导入到hdfs，转换成MapReduce数据，然后将数据导回到关系型数据库。</p>
+
+  <p>sqoop的import依赖数据库的描述约束。</p>
+</blockquote>
+
+<p><strong>sqoop本质是mapreduce，但是仅存在Map task。</strong></p>
+
+<p>sqoop 将sql转化成.java文件打成jar包执行mapreduce</p>
+
+<h4 id="sqoop-执行流程">sqoop 执行流程</h4>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/sqoop%E5%A4%84%E7%90%86%E6%B5%81%E7%A8%8B.png" /></p>
+
+<ol>
+  <li>准备数据集 (preparing resultset)</li>
+  <li>生成mapreduce,.java文件 (codgen)</li>
+  <li>打成jar包, (compile jar)
+    <ul>
+      <li>执行查询拉取数据</li>
+    </ul>
+  </li>
+  <li>到yarn上执行map task (mapreduce on yarn)</li>
+</ol>
+
+<h3 id="3-环境依赖">3. 环境依赖</h3>
+<ol>
+  <li>hadoop</li>
+  <li>hive</li>
+  <li>hbase</li>
+  <li>zookeeper</li>
+</ol>
+
+<h3 id="4-基础用法">4. 基础用法</h3>
+<ul>
+  <li>对于数据库，sqoop将逐行导入hdfs。</li>
+  <li>对于大型的数据集，sqoop从不同的大型数据集读记录到hdfs。</li>
+  <li>导入的进程是并行的</li>
+</ul>
+
+<h4 id="通用链接参数">通用链接参数</h4>
+<p>sqoop 连接数据库三要素：</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">--connect</span> &lt;jdbc-uri&gt; 指定要连接的数据库
+<span class="nt">--username</span> &lt;username&gt; 访问数据库的用户名
+<span class="nt">--password</span> &lt;password&gt;  访问数据库的密码
+<span class="nt">--table</span> TEST			设置要访问的表
+</code></pre></div></div>
+
+<h3 id="5-import">5. Import</h3>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqoop import <span class="nt">--connect</span> jdbc:mysql://hadoop1/test <span class="se">\</span>
+<span class="nt">--username</span> root <span class="se">\</span>
+<span class="nt">--password</span> 123456 <span class="se">\</span>
+<span class="nt">--table</span> book_info
+<span class="nt">--columns</span> book_name, book_type <span class="se">\</span>
+<span class="nt">--fields-terminated-by</span> <span class="s1">'\t'</span> <span class="se">\</span>
+<span class="nt">--delete-target-dir</span> <span class="se">\</span>
+<span class="nt">--num-mappers</span> 1 <span class="se">\</span>
+<span class="nt">--direct</span>
+</code></pre></div></div>
+<ul>
+  <li>num-mappers：指明map task的数目</li>
+  <li>direct，是msql中提高查询 效率的工具 mysqldump, <code class="highlighter-rouge">select * from xx</code></li>
+  <li>columns 指定列</li>
+  <li>fields-terminated-by 指定分隔符</li>
+  <li>delete-target-dir  如果文件存在则删除, 不能和增量导入一起使用</li>
+</ul>
+
+<p>注意：<strong>如果要使用direct参数，需要将mysqldump文件添加每台datanode的/usr/bin下也就是说mysqldump操作是由集群中的datanode节点来执行。</strong></p>
+
+<h5 id="指定文件来执行sqoop">指定文件来执行sqoop</h5>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqoop --options-file /users/homer/work/import.txt --table TEST  
+</code></pre></div></div>
+
+<ul>
+  <li>options-file：指定文件读取目录。</li>
+  <li>fields-terminated-by：指定内容行字段的分隔符，默认以逗号分割。</li>
+  <li>delete-target-dir：如果导入的hdfsh目录存在，则删除。</li>
+  <li>target-dir：指定import,导入的hdfs路径。</li>
+</ul>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Import</span> <span class="k">to</span> <span class="n">Hive</span>
+<span class="c1">--hive-import</span>
+<span class="c1">--hive-database &lt;database-name&gt;</span>
+<span class="c1">--hive-table &lt;table-name&gt;</span>
+
+<span class="n">hive</span><span class="err">的日志，除了在</span><span class="n">hive</span><span class="err">下，还可以有</span><span class="n">tmp</span><span class="err">下可以看到</span>
+</code></pre></div></div>
+
+<p><strong>java.lang.ClassNotFoundException</strong>：找不到对应jar包</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>需要将对应的依赖包导入到 sqoop/lib包下
+
+hive/lib/jdo-<span class="k">*</span>-.jar 
+        hive-<span class="k">*</span>-.jar
+        antlr-<span class="k">*</span>-.jar
+		calcite-<span class="k">*</span>-.jar
+		datanucleus-<span class="k">*</span>-.jar
+		
+拷贝hive/conf/hive-site.xml到sqoop/conf下
+</code></pre></div></div>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C.html" class="read-next-link"></a>
+        <section>
+          <span>[Sqoop]操作</span>
+          <p>Import</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/sqoop-logo.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/sqoop/2018/12/Sqoop-%E4%BF%AE%E6%94%B9%E8%AF%AF%E5%B7%AE%E6%95%B0%E6%8D%AE.html" class="read-next-link"></a>
+          <section>
+            <span>[Sqoop]操作实战</span>
+            <p>需求</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/sqoop-logo.png" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

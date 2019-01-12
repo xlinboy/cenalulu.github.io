@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Sqoop]操作实战 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[Sqoop]操作实战">
+    <meta name="keywords"  content="Sqoop">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[Sqoop]操作实战 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/sqoop/2018/12/Sqoop-%E4%BF%AE%E6%94%B9%E8%AF%AF%E5%B7%AE%E6%95%B0%E6%8D%AE.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#Sqoop" class="post-tag">Sqoop</a>
+          
+        
+      </div>
+      <h1>[Sqoop]操作实战</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/sqoop-logo.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">Sqoop+Hive修改误差数据</h2>
+    
+
+    <article class="markdown-body">
+      <h2 id="需求">需求</h2>
+
+<blockquote>
+  <p>现在发现职业分析数据库中，各大城市中工作1-3的大数据人员的薪资出现偏差,偏差值为2000, 修改该偏差值，并更新RBDMS中。</p>
+</blockquote>
+
+<h3 id="创建textfile-hive表">创建textfile hive表</h3>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">create</span> <span class="k">table</span> <span class="k">work</span><span class="p">.</span><span class="n">job_info_textfile</span><span class="p">(</span>
+<span class="k">key</span> <span class="n">string</span><span class="p">,</span>
+<span class="n">salary</span> <span class="n">float</span>
+<span class="p">)</span> 
+<span class="k">row</span> <span class="n">format</span> <span class="n">delimited</span> <span class="n">fields</span> <span class="n">terminated</span> <span class="k">by</span> <span class="s1">'</span><span class="se">\t</span><span class="s1">'</span><span class="p">;</span>
+</code></pre></div></div>
+<h3 id="将误差数据导入到hive中">将误差数据导入到hive中</h3>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqoop import <span class="se">\</span>
+<span class="nt">--connect</span> jdbc:mysql://hadoop1:3306/test <span class="se">\</span>
+<span class="nt">--username</span> root <span class="se">\</span>
+<span class="nt">--password</span> 123456 <span class="se">\</span>
+<span class="nt">--table</span> recruitment <span class="se">\</span>
+<span class="nt">--columns</span> <span class="s1">'id, salary'</span> <span class="se">\</span>
+<span class="nt">--where</span> <span class="s1">' work_experience&gt;=1 and work_experience&lt;=3'</span> <span class="se">\</span>
+<span class="nt">--delete-target-dir</span> <span class="se">\</span>
+<span class="nt">--fields-terminated-by</span> <span class="s1">'\t'</span> <span class="se">\</span>
+<span class="nt">--direct</span> <span class="se">\</span>
+<span class="nt">--hive-import</span> <span class="se">\</span>
+<span class="nt">--hive-database</span> work <span class="se">\</span>
+<span class="nt">--hive-table</span> job_info_textfile
+</code></pre></div></div>
+
+<h3 id="创建orc-更新acid表">创建orc 更新ACID表</h3>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">create</span> <span class="k">table</span> <span class="k">work</span><span class="p">.</span><span class="n">job_info_orc</span><span class="p">(</span>
+<span class="k">key</span> <span class="n">string</span><span class="p">,</span>
+<span class="n">salary</span> <span class="n">float</span>
+<span class="p">)</span> 
+<span class="n">clustered</span> <span class="k">by</span> <span class="p">(</span><span class="k">key</span><span class="p">)</span> <span class="k">into</span> <span class="mi">2</span> <span class="n">buckets</span>
+<span class="k">row</span> <span class="n">format</span> <span class="n">delimited</span> <span class="n">fields</span> <span class="n">terminated</span> <span class="k">by</span> <span class="s1">'</span><span class="se">\t</span><span class="s1">'</span>
+<span class="n">stored</span> <span class="k">as</span> <span class="n">ORC</span> <span class="n">tblproperties</span> <span class="p">(</span><span class="s1">'transactional'</span><span class="o">=</span><span class="s1">'true'</span><span class="p">);</span>
+</code></pre></div></div>
+
+<h3 id="将误差数据导入orc格式的表中">将误差数据导入orc格式的表中</h3>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">insert</span> <span class="k">into</span> <span class="k">table</span> <span class="k">work</span><span class="p">.</span><span class="n">job_info_orc</span>
+<span class="k">select</span> <span class="k">key</span><span class="p">,</span> <span class="n">salary</span>
+<span class="k">from</span> <span class="k">work</span><span class="p">.</span><span class="n">job_info_textfile</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="将误差修正">将误差修正</h3>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>update work.job_info_orc SET salary = salary-2000;
+</code></pre></div></div>
+
+<h3 id="将修正好的数据导致textfile中">将修正好的数据，导致textfile中</h3>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">insert</span> <span class="n">overwrite</span> <span class="k">table</span> <span class="k">work</span><span class="p">.</span><span class="n">job_info_textfile</span>
+<span class="k">select</span> <span class="k">key</span><span class="p">,</span> <span class="n">salary</span> <span class="k">from</span> <span class="k">work</span><span class="p">.</span><span class="n">job_info_orc</span><span class="p">;</span>
+</code></pre></div></div>
+
+<h3 id="将mysql中的误差数据更新">将mysql中的误差数据更新</h3>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sqoop <span class="nb">export</span> <span class="se">\</span>
+<span class="nt">--connect</span> jdbc:mysql://hadoop1:3306/test <span class="se">\</span>
+<span class="nt">--username</span> root <span class="se">\</span>
+<span class="nt">--password</span> 123456 <span class="se">\</span>
+<span class="nt">--driver</span> com.mysql.jdbc.Driver <span class="se">\</span>
+<span class="nt">--columns</span> <span class="s1">'id,salary'</span> <span class="se">\</span>
+<span class="nt">--num-mappers</span> 5<span class="se">\</span>
+<span class="nt">--table</span> recruitment <span class="se">\</span>
+<span class="nt">--fields-terminated-by</span> <span class="s1">'\t'</span> <span class="se">\</span>
+<span class="nt">--export-dir</span> /user/hive/warehouse/work.db/job_info_textfile <span class="se">\</span>
+<span class="nt">--update-key</span> <span class="s1">'id'</span> <span class="se">\</span>
+<span class="nt">--direct</span>
+</code></pre></div></div>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80.html" class="read-next-link"></a>
+        <section>
+          <span>[Sqoop]基础知识</span>
+          <p>1. 问题</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/sqoop-logo.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/hadoop/2018/12/Secondary-NameNode-(SNN).html" class="read-next-link"></a>
+          <section>
+            <span>[Secondary NameNode]详解</span>
+            <p>NameNode</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

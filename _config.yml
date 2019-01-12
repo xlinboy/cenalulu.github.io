@@ -1,0 +1,88 @@
+# Site settings 配置站点
+title: 'xlin的个人博客'
+description: '记录编程的学习笔记'
+keyword: 'xlin, xlinBoy的个人博客, spark, hadoop, hadoop, hbase...'
+url: 'http://xlinboy.github.io' # your host
+
+# if you don't need baseurl, you should leave this value blank.
+baseurl: ''
+
+# Navigation links
+nav:
+  home: '/'
+  tags: '/tags.html'
+  categories: '/categories.html'
+
+# Footer
+footer:
+  since: 2018
+
+# Author 配置博主信息
+author: 'xlin'
+nickname: 'xlinboy'
+bio: 'spark/hadoop/hadoop/hbase'
+avatar: '/assets/img/profile.png'
+
+# Search
+search: true
+
+# Night mode
+nightMode: false
+
+# Comments 评论功能
+#comments:
+#  gitalk: true
+#  gitalk_clientID: 'ce586682a8756c50fef1'
+#  gitalk_Secret: 'fc51776ccde65613a819e3973e08a1af0a68f0ee'
+ # gitalk_repo: 'cometeme.github.io'
+#  gitalk_owner: 'cometeme'
+#  gitalk_admin: 'cometeme'
+ # distractionFreeMode: false
+
+# MathJax 公式支持 by Ray-Eldath
+mathjax: false
+
+# Share
+social-share: true
+social-share-items: ['wechat', 'weibo', 'twitter']
+
+# theme color 主题皮肤
+theme-color: 'default'  # pink or default
+
+# Post header background patterns (when the post no cover): circuitBoard, overlappingCircles, food, glamorous, ticTacToe, seaOfClouds
+postPatterns: 'circuitBoard'
+
+# SNS settings 配置社交网站
+# url: email, weibo, zhihu, twitter, instagram, juejin, github, douban, facebook, dribbble, uicn, jianshu, medium, linkedin
+sns:
+#  weibo: '//weibo.com/lovecolcol'
+#  juejin: '//juejin.im/user/57a6f434165abd006159b4cc'
+#  instagram: '//www.instagram.com/steveliaocn'
+#  zhihu: 'https://www.zhihu.com/people/cometeme/activities'
+  github: 'https://github.com/xlinboy'
+
+# Tags 设置标签
+recommend-tags: true # whether or not display recommend-tags on the sidebar
+recommend-condition-size: 12 # a tag will be recommended if the size of it is more than this value
+
+# Build settings
+paginate: 6
+paginate_path: 'page:num'
+exclude: ['node_modules', 'dev', 'package.json', 'gulpfile.js', '.gitignore', 'README.md']
+
+# Markdown
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+
+# RSS
+RSS: false
+
+# Permalink
+# See: https://github.com/kaeyleo/jekyll-theme-H2O/issues/35
+permalink: /:categories/:year/:month/:title.html
+#permalink: /:title.html
+
+# Plugins
+plugins: [jekyll-paginate]

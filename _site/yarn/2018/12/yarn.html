@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Yarn]介绍 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[Yarn]介绍">
+    <meta name="keywords"  content="Yarn">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[Yarn]介绍 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/yarn/2018/12/yarn.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#Yarn" class="post-tag">Yarn</a>
+          
+        
+      </div>
+      <h1>[Yarn]介绍</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hadoop-logo.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">Yarn各组件之间的交互</h2>
+    
+
+    <article class="markdown-body">
+      <h3 id="yarn基本思想">yarn基本思想</h3>
+
+<blockquote>
+  <p>Apache Yarn (Yet Another Resource Negotiator)是hadoop的集群资源管理系统</p>
+</blockquote>
+
+<h4 id="yarn-运行机制">yarn 运行机制</h4>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/khjK9La260.png" alt="mark" /></p>
+
+<p>为了在yarn上运行一个应用</p>
+<ol>
+  <li>客户端联系Resource Manager 要求它运行一个application master进程</li>
+  <li>resource manager 找到一个能够在容量中启动application master 的node manager</li>
+  <li>application master 一旦运行起来后能做些什么都依赖应用本身
+4.可能在所处的Container中简单地运行一个计算，并将结果返回客户端；或者是向Resource Manager 请求更多容量，以用于一个分布式运算。</li>
+</ol>
+
+<p>yarn本身不会为应用的各部分彼此间的通信提供任何手段</p>
+
+<h4 id="resourcemanager-资源管理-技术总监">ResourceManager 资源管理 技术总监</h4>
+<ul>
+  <li>一个集群只有一个，全局资源管理器</li>
+  <li>负责启动客户端提交的Application</li>
+  <li>监控Node Manager，汇总上的的资源</li>
+  <li>根据请求分配资源</li>
+</ul>
+
+<h4 id="nodemanager-小组长">NodeManager 小组长</h4>
+<ul>
+  <li>每个从节点一个</li>
+  <li>监管自己所属节点的资源</li>
+  <li>监控资源使用情况并向Resource manager 汇报</li>
+</ul>
+
+<h4 id="让applicationmaster负责-任务调度-项目经理">让ApplicationMaster负责 任务调度 项目经理</h4>
+
+<ul>
+  <li>每个作业启动一个</li>
+  <li>根据作业切分任务tasks</li>
+  <li>向Resource Manager申请资源</li>
+  <li>与Node Manager协作，将分配申请到的资源给内部任务tasks</li>
+  <li>监控tasks运行情况， 重启失败任务</li>
+</ul>
+
+<h3 id="yarn计算资源抽象">yarn计算资源抽象</h3>
+
+<p>在yarn中，计算资源被抽象为Container。</p>
+
+<p>每个Container描述</p>
+<ul>
+  <li>可以使用的Cpu资源和内存资源</li>
+  <li>执行命令</li>
+  <li>环境变量</li>
+  <li>外部资源</li>
+</ul>
+
+<p>如何获得运行各个任务的Container</p>
+<ul>
+  <li>由ApplicationMaster 向 ResourceManager申请</li>
+  <li>ApplicatinoMaster 本身也运行一个Container， 这个Container由ResourceManager向自身申请启动</li>
+</ul>
+
+<p>如何启动运行</p>
+<ul>
+  <li>向Container所属的NodeManager发起运行</li>
+</ul>
+
+<h3 id="和组件之间的心跳信号">和组件之间的心跳信号</h3>
+
+<h5 id="applicationmaster与resourcemanager心跳">ApplicationMaster与ResourceManager心跳</h5>
+<ul>
+  <li>AM =&gt; RM
+    <ul>
+      <li>对Container的资源需求(cpu+memory)和优秀级</li>
+      <li>已用完等待回收的Container列表</li>
+    </ul>
+  </li>
+  <li>RM =&gt; AM
+    <ul>
+      <li>新申请到的Container</li>
+      <li>已完成的Container的状态</li>
+    </ul>
+  </li>
+</ul>
+
+<h5 id="applicationmaster与nodemanager心跳">ApplicationMaster与NodeManager心跳</h5>
+<ul>
+  <li>AM =&gt; NM
+    <ul>
+      <li>发起启动的Container请求</li>
+    </ul>
+  </li>
+  <li>NM =&gt; AM
+    <ul>
+      <li>汇报Container</li>
+    </ul>
+  </li>
+</ul>
+
+<h5 id="nodemanager-与-resourcemanager心跳">NodeManager 与 ResourceManager心跳</h5>
+<ul>
+  <li>NM =&gt; RM
+    <ul>
+      <li>Node Manager上所有的Container</li>
+    </ul>
+  </li>
+  <li>RM =&gt; NM
+    <ul>
+      <li>已删除和等待清理的Container列表</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="yarn调度器调度算法">Yarn调度器&amp;调度算法</h3>
+
+<blockquote>
+  <p>Yarn使用队列解决多租房中共享资源的问题。</p>
+</blockquote>
+
+<p>支持三种调度器：</p>
+<ul>
+  <li>FIFO</li>
+  <li>Capacity Scheduler</li>
+  <li>Fair Scheduler</li>
+</ul>
+
+<h4 id="fifo调度器">FIFO调度器</h4>
+
+<ul>
+  <li>所有向集群提交的作业使用一个队列</li>
+  <li>根据提交作业的顺序运动</li>
+  <li>优点：
+    <ul>
+      <li>简单易懂</li>
+      <li>可以按照作业优先级调度</li>
+    </ul>
+  </li>
+  <li>缺点：
+    <ul>
+      <li>资源利用率不高</li>
+      <li>不允许抢占</li>
+    </ul>
+  </li>
+</ul>
+
+<h4 id="capacity-scheduler资源调度器">Capacity Scheduler资源调度器</h4>
+
+<p>设计思想：</p>
+
+<ul>
+  <li>资源按照比例分配给各个队列</li>
+</ul>
+
+<p>特点</p>
+
+<ul>
+  <li>计算能力保证
+    <ul>
+      <li>以队列为单位划分资源，每个队列保证最低资源</li>
+    </ul>
+  </li>
+  <li>灵活性
+    <ul>
+      <li>当某个队列空间时，其资源可以分配给其他的队列使用</li>
+    </ul>
+  </li>
+  <li>支持优先级
+    <ul>
+      <li>单个队列内部使用FIFO， 支持作业优先级调度</li>
+    </ul>
+  </li>
+  <li>多租房
+    <ul>
+      <li>综合考虑多种因素防止单个作业、用户、或者队列 独占资源</li>
+      <li>每个队列可以配置一定比例的最低资源配置和使用上限</li>
+      <li>每个队列有严格的访问限制 ，只能自己队列提交任务</li>
+    </ul>
+  </li>
+</ul>
+
+<h5 id="capacity-scheduler资源分配算法">Capacity Scheduler资源分配算法</h5>
+
+<ol>
+  <li>选择队列
+    <ul>
+      <li>从跟队列开始，使用深度优先算法找出资源占用率最低的叶子节点</li>
+    </ul>
+  </li>
+  <li>选择作业
+    <ul>
+      <li>默认按照作业优先级和提交时间顺序选择</li>
+    </ul>
+  </li>
+  <li>选择Container
+    <ul>
+      <li>取该作业中最高优先级的Container，如果优先级相同会选择满足本地性的Container: Node Local &gt; Rack Local &gt; Different Rack</li>
+    </ul>
+  </li>
+</ol>
+
+<h4 id="fair-scheduler-公平资源调度器">Fair Scheduler 公平资源调度器</h4>
+
+<p>设置思想： 资源公平分配。</p>
+
+<p>具有与Capacity Scheduler 相似的特点。</p>
+
+<p>不同点：</p>
+<ul>
+  <li>核心策略不同
+    <ul>
+      <li>Capacity Scheduler 优先选择资源利用率最低的队列</li>
+      <li>Fair Scheduler考虑是公平的， 公平体现在作业对资源 分配</li>
+    </ul>
+  </li>
+  <li>单独设置队列间资源分配方式
+    <ul>
+      <li>FAIR 默认 used memory/ min share</li>
+      <li>DRF 主资源公平调度</li>
+    </ul>
+  </li>
+</ul>
+
+<h5 id="fair-scheduler---fair资源分配算法">Fair Scheduler - FAIR资源分配算法</h5>
+
+<p>总体流程与Capacity Scheduler一致</p>
+<ol>
+  <li>选择队列</li>
+  <li>选择作业</li>
+  <li>选择Container</li>
+</ol>
+
+<p>选择队列和作业使用公平排序算法</p>
+<ul>
+  <li>实际最小份额
+    <ul>
+      <li>mindshare = min (资源需求量， 配置minShare)</li>
+    </ul>
+  </li>
+  <li>是否饥饿
+    <ul>
+      <li>isNeedy = 资源使用量 &lt; minShare</li>
+    </ul>
+  </li>
+  <li>资源分配比
+    <ul>
+      <li>minShareRatio = 资源使用量/max(mindshare, 1)</li>
+    </ul>
+  </li>
+  <li>资源使用权重比
+    <ul>
+      <li>useToWeightRatio = 资源使用量/权重</li>
+      <li>权重 在配置文件中配置</li>
+    </ul>
+  </li>
+</ul>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+
+      
+      <div class="read-next-item">
+        <a href="/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C.html" class="read-next-link"></a>
+          <section>
+            <span>[Sqoop]操作</span>
+            <p>Import</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/sqoop-logo.png" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

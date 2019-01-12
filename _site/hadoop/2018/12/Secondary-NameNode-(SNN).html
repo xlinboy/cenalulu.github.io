@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Secondary NameNode]详解 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[Secondary NameNode]详解">
+    <meta name="keywords"  content="Hadoop">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[Secondary NameNode]详解 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/hadoop/2018/12/Secondary-NameNode-(SNN).html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#Hadoop" class="post-tag">Hadoop</a>
+          
+        
+      </div>
+      <h1>[Secondary NameNode]详解</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hadoop-logo.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">Secondary Namenode的相关知识</h2>
+    
+
+    <article class="markdown-body">
+      <h2 id="namenode">NameNode</h2>
+
+<blockquote>
+  <p>主要用来保存HDFS元数据信息，比如命名空间信息，块信息等。当它运行的时候，这些信息是存在内存中的。但是这些信息也可以持久化到磁盘上。</p>
+</blockquote>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/6b8FC7bb9f.png" alt="mark" /></p>
+
+<p>fsimage: 它是在NameNode启动时对整个文件系统的快照</p>
+
+<p>edits log: 它是在NameNode启动后，对文件系统的改动序列</p>
+
+<blockquote>
+  <p>只有在NameNode重启时，edits log才会合并到fsimage文件中，从而得到一个文件系统的最新快照。但是在生产环境集群中的NameNode是很少重启的， <strong>这意味者当NameNode运行来很长时间后，edits文件会变的很大。</strong></p>
+</blockquote>
+
+<p>在这种情况下就会出现下面这些问题：</p>
+
+<ol>
+  <li>edits log文件会变的很大，怎么去管理这个文件是一个挑战。</li>
+  <li>NameNode的重启会花费很长时间，因为有很多改动[在edits log中]要合并到fsimage文件上。</li>
+  <li>如果NameNode挂掉了，那我们就丢失了很多改动因为此时的fsimage文件非常旧。</li>
+</ol>
+
+<h2 id="secondary-namenode">Secondary NameNode</h2>
+<blockquote>
+  <p>主要作用：帮我们减少edits log文件的大小和得到一个最新的fsimage文件，从减少namenode的压力。</p>
+
+  <p>它的职责是，合并NameNode的edits  log到fsimage文件中</p>
+</blockquote>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/DF19igj73D.png" alt="mark" /></p>
+
+<ol>
+  <li>客户端向namenode发出更新元数据的请求</li>
+  <li>snn 向nn请求checkpoint（合并数据）</li>
+  <li>此时namenode会滚动当前在操作的日志文件edits.inprogress。</li>
+  <li>snn会将edits文件(多个滚动的文件)和镜像文件fsimage下载</li>
+  <li>根据操作日志文件根据一些算法计算出元数据从而来和镜像文件进行合并存到内存中。</li>
+  <li>将合并后的元数据dump成新的image文件，持久化到硬盘(fsimage.chkpoint)</li>
+  <li>上传新的fsimage到NameNode。</li>
+  <li>NameNode把旧的fsimage用新的覆盖掉。</li>
+</ol>
+
+<h4 id="日志的滚动">日志的滚动：</h4>
+
+<blockquote>
+  <p>日志文件是一个正在写的edits.inprogress,多个滚动的ecits.000001..。checkpoint时，将正在写的滚动。</p>
+</blockquote>
+
+<h4 id="snn的特点">SNN的特点：</h4>
+
+<blockquote>
+  <p>Secondary NameNode所做的是在文件系统这设置一个Checkpoint来<strong>帮助NameNode更好的工作</strong>;它不是取代NameNode，也不是NameNode的备份。</p>
+</blockquote>
+
+<p>Secondary NameNode的检查进程启动，由两个参数配置:</p>
+<ol>
+  <li>fs.checkpoint.period，指定连续两次检查点的最大时间间隔， 默认值是1小时。</li>
+  <li>fs.checkpoint.size定义了edits日志文件的最大值，一旦超过这个值会导致强制执行检查点（即使没到检查点的最大时间间隔）。默认值是64MB。</li>
+</ol>
+
+<ul>
+  <li>NameNode会从fs.checkpoint.dir目录读取检查点，并把它保存在dfs.name.dir目录下。
+    <ul>
+      <li>如果dfs.name.dir目录下有合法的镜像文件，NameNode会启动失败。 NameNode会检查fs.checkpoint.dir目录下镜像文件的一致性，但是不会去改动它。</li>
+    </ul>
+  </li>
+</ul>
+
+<p>如果NameNode上除了最新的检查点以外，所有的其他的历史镜像和edits文件都丢失了， NameNode可以引入这个最新的检查点。以下操作可以实现这个功能：</p>
+<ol>
+  <li>在配置参数dfs.name.dir指定的位置建立一个空文件夹；</li>
+  <li>把检查点目录的位置赋值给配置参数fs.checkpoint.dir；</li>
+  <li>启动NameNode，并加上-importCheckpoint。</li>
+</ol>
+
+<p>NameNode硬盘坏了，数据能恢复吗？如果能，能够全部恢复吗？</p>
+
+<ol>
+  <li>
+    <p>能, 把Secondary NameNode的元数据拷贝给namenode</p>
+  </li>
+  <li>
+    <p>不能, 可能会丢失最后一次操作30min内(默认时间)或不超过64M大小数据的所有操作</p>
+  </li>
+</ol>
+
+<p>NameNode宕机了，有Sercondary NameNode存在，所以hdfs还是只可以用的吗？</p>
+
+<ul>
+  <li>不可以，Secondary NameNode只是协助进行元数据合并，不对外提供服务，所以hdfs会瘫痪。
+热备：你坏了，我立马顶上。</li>
+</ul>
+
+<p>有Sercondary NameNode 和NameNode我们配置时需要注意什么？</p>
+
+<ul>
+  <li>
+    <p>NameNode, Secondary NameNode不能配置在同一个节点上</p>
+  </li>
+  <li>
+    <p>hdfs的工作目录，至少配置两个，会同时向两个目录写东西，内容完全一样。</p>
+  </li>
+</ul>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/sqoop/2018/12/Sqoop-%E4%BF%AE%E6%94%B9%E8%AF%AF%E5%B7%AE%E6%95%B0%E6%8D%AE.html" class="read-next-link"></a>
+        <section>
+          <span>[Sqoop]操作实战</span>
+          <p>需求</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/sqoop-logo.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/hadoop/2018/12/MapReduce-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.html" class="read-next-link"></a>
+          <section>
+            <span>[Mapreduce]执行流程</span>
+            <p>  MapReduce是一个分布式运算程序的编程框架。其核心功能是：将用户编写的业务逻辑代码和自带默认组件整合成一...</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[flume]基础语法 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[flume]基础语法">
+    <meta name="keywords"  content="Flume">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[flume]基础语法 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/flume/2018/12/Flume-%E5%9F%BA%E7%A1%80.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#Flume" class="post-tag">Flume</a>
+          
+        
+      </div>
+      <h1>[flume]基础语法</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/flume-logo.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">flume的工作流程及操作</h2>
+    
+
+    <article class="markdown-body">
+      <h3 id="1-什么是flume">1 什么是flume</h3>
+
+<p>Flume是一个分布式的、可靠的、高可用的数据采集、聚合和大型数据很迁移(log)系统。</p>
+
+<p>web server.log</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>ipaddr</th>
+      <th>visittime</th>
+      <th>visiturl</th>
+      <th>duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ip地址</td>
+      <td>访问时间</td>
+      <td>来访url</td>
+      <td>停留时长</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>这些日志有啥用？</p>
+<ul>
+  <li>观看了哪些视频</li>
+  <li>视频看没看完</li>
+  <li>通过哪些外部链接访问本网站(广告投放)</li>
+  <li>每天在哪个时间段访问的频次较高</li>
+</ul>
+
+<h3 id="2-什么时候用flume">2. 什么时候用Flume?</h3>
+<p>需要进行数据采集时。</p>
+
+<h3 id="3-flume体系">3 Flume体系</h3>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/a_flume.png" alt="img" /></p>
+<ul>
+  <li>Flume 由外部服务器传输资源</li>
+  <li>外部source以flume能识别的数据向flume发送事件
+    <ul>
+      <li>可以是Avro clients、other Flume agents、Thrift clients written</li>
+    </ul>
+  </li>
+  <li>Flume source接受一个事件，就将存储在一个或多个channels
+    <ul>
+      <li>source：用于配置数据采集的方式（http, localFileSystem, Tcp)</li>
+    </ul>
+  </li>
+  <li>channel保存事件并且存储， 直到sink 拉取数据
+    <ul>
+      <li>memory channel：临时内存存储</li>
+      <li>filechannel： checkpoint、datadir 先把数据存储到本地，再进行数据传输</li>
+    </ul>
+  </li>
+  <li>sink 从channel移除事件并且将event放到外部仓库上，比如hdfs， 或者转发给下一个Flume agent中的 source
+    <ul>
+      <li>sink：配置数据存储的目的地（HDFS、 本地文件系统、logger、http）</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>source 和 sink 是异步执行的</strong></p>
+
+<p>#### 3.1 可靠性</p>
+
+<p>​       events 存储在每个agent的channel中。然后events事件流到下一个agent或终端如hdfs中。只有当这些events存储在hdfs或下一个agent的channel中才会将原来的events删除。</p>
+
+<p>​       flume 通过事务保证event交付的可靠性。</p>
+
+<h4 id="32-可恢复性">3.2 可恢复性</h4>
+
+<p>​    Flume支持一个由本地文件系统支持的持久化文件通道。</p>
+
+<p>​    将event保存在内存中，如果发生故障数据是无法恢复的。当然在内存中速度会更快。</p>
+
+<h4 id="33-flume常用组件">3.3 Flume常用组件</h4>
+
+<ul>
+  <li>source
+    <ul>
+      <li>exec source</li>
+      <li>spooling directory source</li>
+    </ul>
+  </li>
+  <li>channel
+    <ul>
+      <li>memory channel</li>
+      <li>file channel</li>
+    </ul>
+  </li>
+  <li>sink
+    <ul>
+      <li>logger sink</li>
+      <li>hdfs sink</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="4-flume-常用操作">4 Flume 常用操作</h3>
+
+<h4 id="41-常用配置">4.1 常用配置</h4>
+
+<div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">#</span> <span class="n">每个组件的名称</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sources</span> <span class="k">=</span> <span class="n">r1</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sinks</span> <span class="k">=</span> <span class="n">k1</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">channels</span> <span class="k">=</span> <span class="n">c1</span>
+
+<span class="k">#</span> <span class="n">netcat监控方式</span><span class="err">、</span><span class="n">监控的ip</span><span class="err">：</span><span class="n">localhost</span><span class="err">、</span><span class="n">端口</span><span class="err">：</span><span class="mi">44444</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">r1</span><span class="o">.</span><span class="k">type</span> <span class="o">=</span> <span class="n">netcat</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">r1</span><span class="o">.</span><span class="n">bind</span> <span class="k">=</span> <span class="n">localhost</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">r1</span><span class="o">.</span><span class="n">port</span> <span class="k">=</span> <span class="mi">44444</span>
+
+<span class="k">#</span> <span class="n">sink</span> <span class="n">的方式</span> <span class="n">logger</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sinks</span><span class="o">.</span><span class="n">k1</span><span class="o">.</span><span class="k">type</span> <span class="o">=</span> <span class="n">logger</span>
+
+<span class="k">#</span> <span class="n">写入到内存</span><span class="err">、</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">channels</span><span class="o">.</span><span class="n">c1</span><span class="o">.</span><span class="k">type</span> <span class="o">=</span> <span class="n">memory</span>
+
+<span class="k">#</span> <span class="n">绑定source和sink到channel</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sources</span><span class="o">.</span><span class="n">r1</span><span class="o">.</span><span class="n">channels</span> <span class="k">=</span> <span class="n">c1</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">sinks</span><span class="o">.</span><span class="n">k1</span><span class="o">.</span><span class="n">channel</span> <span class="k">=</span> <span class="n">c1</span>
+</code></pre></div></div>
+
+<h4 id="42-source">4.2 Source</h4>
+
+<blockquote>
+  <p>Exec source</p>
+</blockquote>
+
+<p>通过Linux命令(cat [name pipe] or tail -F [file])监控指定文件的日志, 如果源意外退出，将不会产生更多数据。</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a1.sources <span class="o">=</span> r1
+a1.channels <span class="o">=</span> c1
+<span class="c"># 指定类型、命令</span>
+a1.sources.r1.type <span class="o">=</span> <span class="nb">exec
+</span>a1.sources.r1.command <span class="o">=</span> <span class="nb">tail</span> <span class="nt">-F</span> /var/log/secure
+
+a1.sources.r1.channels <span class="o">=</span> c1
+</code></pre></div></div>
+
+<p><a href="https://flume.apache.org/FlumeUserGuide.html#exec-source">Exec Source详细参数</a></p>
+
+<blockquote>
+  <p>Spooling Directory Source</p>
+</blockquote>
+
+<p>允许将数据放在磁盘上，比exec source更具可靠性，数据不会丢失，但效率更比exec source低。</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a1.channels <span class="o">=</span> ch-1
+a1.sources <span class="o">=</span> src-1
+
+fs.sources.r3.type<span class="o">=</span>spooldir
+fs.sources.r3.spoolDir<span class="o">=</span>/opt/modules/apache-flume-1.6.0-bin/flume_template
+fs.sources.r3.fileHeader<span class="o">=</span><span class="nb">true
+</span>fs.sources.r3.ignorePattern<span class="o">=</span>^<span class="o">(</span>.<span class="o">)</span><span class="k">*</span><span class="se">\\</span>.out<span class="nv">$ </span><span class="c"># 过滤out结尾的文件</span>
+</code></pre></div></div>
+
+<p><a href="https://flume.apache.org/FlumeUserGuide.html#spooling-directory-source">Spooling Directory Source 详细参数</a></p>
+
+<h4 id="43-channel">4.3 Channel</h4>
+
+<blockquote>
+  <p>Memory Channel</p>
+</blockquote>
+
+<p>数据在内存中，临时存储</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a1.channels <span class="o">=</span> c1
+a1.channels.c1.type <span class="o">=</span> memory
+a1.channels.c1.capacity <span class="o">=</span> 10000
+a1.channels.c1.transactionCapacity <span class="o">=</span> 10000
+a1.channels.c1.byteCapacityBufferPercentage <span class="o">=</span> 20
+a1.channels.c1.byteCapacity <span class="o">=</span> 800000
+</code></pre></div></div>
+
+<p><a href="https://flume.apache.org/FlumeUserGuide.html#memory-channel">Memory Channel 详细参数</a></p>
+
+<blockquote>
+  <p>File Channel</p>
+</blockquote>
+
+<p>先把数据存储到本地，再进行数据传输，增加可靠性</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a1.channels <span class="o">=</span> c1
+a1.channels.c1.type <span class="o">=</span> file
+a1.channels.c1.checkpointDir <span class="o">=</span> /mnt/flume/checkpoint
+a1.channels.c1.dataDirs <span class="o">=</span> /mnt/flume/data
+</code></pre></div></div>
+
+<p><a href="https://flume.apache.org/FlumeUserGuide.html#file-channel">File Channel 详细参数</a></p>
+
+<blockquote>
+  <p>Sink</p>
+</blockquote>
+
+<p>Info级别日志等级，通常用于测试环境/调试</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>a1.channels <span class="o">=</span> c1
+a1.sinks <span class="o">=</span> k1
+a1.sinks.k1.type <span class="o">=</span> logger
+a1.sinks.k1.channel <span class="o">=</span> c1
+</code></pre></div></div>
+
+<blockquote>
+  <p>HDFS Sink</p>
+</blockquote>
+
+<p>事件下沉到HDFS上。它支持序列文件和txt文本文件。</p>
+
+<pre><code class="language-Shell">a1.channels = c1
+a1.sinks = k1
+a1.sinks.k1.type = hdfs
+a1.sinks.k1.channel = c1
+a1.sinks.k1.hdfs.path = /flume/events/%y-%m-%d/%H%M/%S
+a1.sinks.k1.hdfs.filePrefix = events-
+a1.sinks.k1.hdfs.round = true
+a1.sinks.k1.hdfs.roundValue = 10
+a1.sinks.k1.hdfs.roundUnit = minute
+</code></pre>
+
+<p><a href="https://flume.apache.org/FlumeUserGuide.html#hdfs-sink">详细参数</a></p>
+
+<h3 id="5-实战">5 实战</h3>
+
+<h4 id="51-hive-source实时采集hive日志">5.1 hive source（实时采集hive日志）</h4>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hive.sources <span class="o">=</span> r2
+hive.channels <span class="o">=</span> c2
+hive.sinks <span class="o">=</span> k2
+
+<span class="c"># define sources</span>
+hive.sources.r2.type <span class="o">=</span> <span class="nb">exec
+</span>hive.sources.r2.command <span class="o">=</span> <span class="nb">tail</span> <span class="nt">-F</span> /var/log/secure
+hive.sources.r2.shell <span class="o">=</span> /bin/bash <span class="nt">-c</span>
+hive.sources.r2.logStdErr <span class="o">=</span> <span class="nb">false
+</span>hive.sources.r2.channels <span class="o">=</span> c2
+
+<span class="c"># def channels</span>
+hive.channels.c2.type <span class="o">=</span> memory
+hive.channels.c2.capacity <span class="o">=</span> 10000
+hive.channels.c2.transactionCapacity <span class="o">=</span> 100
+
+<span class="c"># def sinks</span>
+hive.sinks.k2.type <span class="o">=</span> hdfs
+hive.sinks.k2.hdfs.path <span class="o">=</span> hdfs://hadoop1:8020/user/root/flume-hive/%y-%m-%d/%H%M/%S
+hive.sinks.k2.hdfs.fileType <span class="o">=</span> DataStream
+hive.sinks.k2.hdfs.writeFormat <span class="o">=</span> Text
+hive.sinks.k2.hdfs.round <span class="o">=</span> <span class="nb">true
+</span>hive.sinks.k2.hdfs.roundValue <span class="o">=</span> 10
+hive.sinks.k2.hdfs.roundUnit <span class="o">=</span> minute
+hive.sinks.k2.hdfs.rollInterval <span class="o">=</span> 30
+hive.sinks.k2.hdfs.rollSize <span class="o">=</span> 0
+hive.sinks.k2.hdfs.rollCount <span class="o">=</span> 0
+hive.sources.r2.channels <span class="o">=</span> c2
+</code></pre></div></div>
+
+<p><a href="https://zcyoop.github.io/2018/12/13/Hadoop%E5%8D%8F%E5%90%8C%E6%A1%86%E6%9E%B6-Flume.html">Flume结构以及使用</a></p>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/hadoop/2018/12/GITHUB.html" class="read-next-link"></a>
+        <section>
+          <span>[GITHUB]介绍</span>
+          <p>主要功能</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+        
+     </div>
+      
+
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

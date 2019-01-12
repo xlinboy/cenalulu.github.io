@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[GITHUB]介绍 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[GITHUB]介绍">
+    <meta name="keywords"  content="Hadoop">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[GITHUB]介绍 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/hadoop/2018/12/GITHUB.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#Hadoop" class="post-tag">Hadoop</a>
+          
+        
+      </div>
+      <h1>[GITHUB]介绍</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hadoop-logo.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">GITHUB基础介绍及一些简单操作</h2>
+    
+
+    <article class="markdown-body">
+      <h2 id="主要功能">主要功能</h2>
+
+<h4 id="organization">Organization</h4>
+<blockquote>
+  <p>个人使用时只要使用个人账户就足够了，但如果是公司，建议使用 Organization 账户。可以统一管理账户和权 限，还能统一支付一些费用。</p>
+</blockquote>
+
+<h4 id="issue-功能">Issue 功能</h4>
+
+<blockquote>
+  <p>是将一个任务或问题分配给一个 Issue 进行追踪和管理的功能。每一个功能更改或修正都对应一个Issue，讨论或修正都以这个Issue 为中心进行。只要查看 Issue，就能知道和这个更改相关的一切信息，并以此进行管理。</p>
+</blockquote>
+
+<h4 id="wiki">Wiki</h4>
+<blockquote>
+  <p>通过 Wiki 功能，任何人都能随时对一篇文章进行更改并保存，因 此可以多人共同完成一篇文章。</p>
+</blockquote>
+
+<h4 id="pull-request">Pull Request</h4>
+<blockquote>
+  <p>开发者向 GitHub 的仓库推送更改或功能添加后，可以通过 Pull
+Request 功能向别人的仓库提出申请，请求对方合并。</p>
+</blockquote>
+
+<h1 id="git">Git</h1>
+
+<h4 id="git是啥">GIT是啥</h4>
+<ul>
+  <li>Git是仓库管理工具是github的核心。</li>
+  <li>Git 属于分散型版本管理系统，是为版本管理而设计的软件。</li>
+</ul>
+
+<h4 id="什么是版本管理">什么是版本管理</h4>
+<blockquote>
+  <p>版本管理就是管理更新的历史记录。它为我们提供了一些在软件开发过程中必不可少的功能，例如记录一款软件添加或更改源代码的过程，回滚到特定阶段，恢复误删除的文件等。</p>
+</blockquote>
+
+<h4 id="集中型和分散型">集中型和分散型</h4>
+
+<h5 id="集中型">集中型</h5>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/%E5%88%86%E6%95%A3%E5%9E%8B.PNG" alt="image" /></p>
+
+<blockquote>
+  <p>将仓库集中存放在服务器之中，所以只存在一个仓库。</p>
+</blockquote>
+
+<p>优点</p>
+<ul>
+  <li>易于管理</li>
+</ul>
+
+<p>缺点</p>
+<ul>
+  <li>服务器凉了，就无法继续开发</li>
+  <li>数据易丢失</li>
+</ul>
+
+<h4 id="分散型">分散型</h4>
+
+<blockquote>
+  <p>分散型拥有多个仓库，相对而言稍显复杂。不过，由于
+本地的开发环境中就有仓库，所以开发者不必连接远程仓库就可以进行开发。</p>
+</blockquote>
+
+<p>优点</p>
+<ul>
+  <li>仓库之间都可以进行 push 和 pull。</li>
+  <li>不通过 GitHub，开发者 A 也可以直接向开发者 B 的
+仓库进行 push 或 pull</li>
+</ul>
+
+<p>缺点：</p>
+<ul>
+  <li>在使用前如果不事先制定规范，初学者往
+往会搞不清最新的源代码保存在哪里，导致开发失去控制</li>
+</ul>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/Subversion.png" alt="image" /></p>
+
+<h3 id="初始设置">初始设置</h3>
+
+<ul>
+  <li>~/.gitconfig</li>
+</ul>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>用英文
+$ git config --global user.name "Firstname Lastname"
+$ git config --global user.email "your_email@example.com"
+
+# 提高可读性 
+$ git config --global color.ui auto
+</code></pre></div></div>
+
+<h3 id="使用前的准备">使用前的准备</h3>
+
+<h4 id="设置ssh-key">设置SSH key</h4>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> ssh-keygen -t rsa -C "your_email@example.com"
+ 
+ # 这里的密码是免密登陆github时，验证使用
+ Enter passphrase (empty for no passphrase): 请输入密码
+ 
+</code></pre></div></div>
+
+<p>上个步骤成功后会生成</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Your identification has been saved in /Users/your_user_directory/.ssh/id_rsa.
+Your public key has been saved in /Users/your_user_directory/.ssh/id_rsa.pub.
+
+</code></pre></div></div>
+<p>id_rsa 文件是私有密钥，id_rsa.pub 是公开密钥。</p>
+
+<h4 id="添加公开密钥">添加公开密钥</h4>
+<blockquote>
+  <p>在 GitHub 中添加公开密钥，今后就可以用私有密钥进行认证了。 Key 部分请粘贴 id_rsa.pub 文件里的内容。id_rsa.pub
+的内容可以用如下方法查看</p>
+</blockquote>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat ~/.ssh/id_rsa.pub
+ssh-rsa 公开密钥的内容 your_email@example.com
+
+</code></pre></div></div>
+<p>添加成功之后，创建账户时所用的邮箱会接到一封提示“公共密钥添加完成”的邮件。</p>
+
+<p>接下来进行免密登陆</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh -T git@github.com
+</code></pre></div></div>
+
+<h3 id="创建仓库">创建仓库</h3>
+<ul>
+  <li>Repository name 仓库名称。</li>
+  <li>Description 栏中可以设置仓库的说明。选填</li>
+  <li>Public、Private。</li>
+  <li>Initialize this repository with a README：GitHub 会自动初始化仓库并设置 README 文件，让用户可以立刻clone仓库。</li>
+  <li>Add .gitignore：通过它可以在初始化时自动生
+成.gitignore文件。 .gitignore文件该文件用来描述 Git 仓库中不需管理的文件与目录。</li>
+  <li>Add a license：选择要添加的许可协议文件。将自动
+生成包含许可协议内容的 LICENSE 文件，用来表明该仓库内容的许可协议。</li>
+</ul>
+
+<h3 id="连接仓库">连接仓库</h3>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://github.com/%E7%94%A8%E6%88%B7%E5%90%8D/Hello-Word
+</code></pre></div></div>
+<ul>
+  <li>README.md：文件的内容
+会自动显示在仓库的首页当中。人们一般会在这个文件中标明本
+仓库所包含的软件的概要、使用流程、许可协议等信息。</li>
+  <li>GitHub Flavored Markdown</li>
+</ul>
+
+<h3 id="公开代码">公开代码</h3>
+
+<ul>
+  <li>clone 已有仓库
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone git@github.com:hirocastest/Hello-World.git
+</code></pre></div>    </div>
+    <p>这里会要求输入 GitHub 上设置的公开密钥的密码。认证成功后，
+仓库便会被 clone 至仓库名后的目录中。将想要公开的代码提交至这个
+仓库再 push 到 GitHub 的仓库中，代码便会被公开。</p>
+  </li>
+  <li>编写代码
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>查看git 状态
+git status
+</code></pre></div>    </div>
+  </li>
+  <li>提交
+```
+git add hello_world.php</li>
+</ul>
+
+<p>git commit -m “Add hello world script by php”</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>通过 git add命令将文件加入暂存区 ，再通过 git commit命令提交。
+
+</code></pre></div></div>
+<p>日志
+git log</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- 进行 push
+ push，GitHub 上的仓库就会被更新。
+</code></pre></div></div>
+<p>git push [url]</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+### 通过实际操作学习Git
+
+#### 基础操作
+
+- `git init`——初始化仓库
+
+  ```shell
+  # .git 目录里存储着管理当前目录内容所需的仓库数据。
+  # git-tutorial 里面的内容一般叫做“附属于该仓库的工作树”
+  $ mkdir git-tutorial
+  $ cd git-tutorial
+  $ git init
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">git status</code>——查看仓库的状态</p>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">git add</code>——向暂存区中添加文件</p>
+
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>git add README.md
+<span class="nv">$ </span>git status
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">git commit</code>——保存仓库的历史记录</p>
+  </li>
+</ul>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c"># 记述一行提交信息</span>
+  <span class="nv">$ </span>git commit <span class="nt">-m</span> <span class="s2">"First commit"</span>
+</code></pre></div></div>
+
+<ul>
+  <li>
+    <p><code class="highlighter-rouge">git log</code>——查看提交日志</p>
+
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>git log
+<span class="c"># 只显示提交信息的第一行</span>
+<span class="nv">$ </span>git log <span class="nt">--pretty</span><span class="o">=</span>short
+<span class="c"># 只显示指定目录、文件的日志</span>
+<span class="nv">$ </span>git log README.md
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p><code class="highlighter-rouge">git diff</code>——查看更改前后的差别</p>
+  </li>
+</ul>
+
+<h4 id="分支的操作">分支的操作</h4>
+
+<ul>
+  <li>
+    <p>git branch——显示分支一览表</p>
+  </li>
+  <li>
+    <p>git checkout  - b——创建、切换分支</p>
+
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 切换到 feature - A 分支并进行提交</span>
+<span class="nv">$ </span>git checkout <span class="nt">-b</span> feature-A
+<span class="nv">$ </span>git branch
+<span class="nv">$ </span>git add README.md
+<span class="nv">$ </span>git commit <span class="nt">-m</span> <span class="s2">"Add feature-A"</span>
+<span class="c">#  切换到 master 分支</span>
+<span class="nv">$ </span>git checkout master
+<span class="c"># 切换回上一个分支</span>
+<span class="nv">$ </span>git checkout -
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>git merge——合并分支</p>
+
+    <div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 切换到merge分支</span>
+<span class="nv">$ </span>git checkout master
+<span class="nv">$ </span>git merge <span class="nt">--no-ff</span> feature-A
+</code></pre></div>    </div>
+  </li>
+</ul>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html" class="read-next-link"></a>
+        <section>
+          <span>[HDFS]上传和下载</span>
+          <p>客户端上传数据:</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/flume/2018/12/Flume-%E5%9F%BA%E7%A1%80.html" class="read-next-link"></a>
+          <section>
+            <span>[flume]基础语法</span>
+            <p>1 什么是flume</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/flume-logo.png" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

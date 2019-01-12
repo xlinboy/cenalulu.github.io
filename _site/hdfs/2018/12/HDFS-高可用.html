@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[HDFS]高可用 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[HDFS]高可用">
+    <meta name="keywords"  content="HDFS">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[HDFS]高可用 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#HDFS" class="post-tag">HDFS</a>
+          
+        
+      </div>
+      <h1>[HDFS]高可用</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hadoop-logo.jpg') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">Hadoop高可用的的配置及起因</h2>
+    
+
+    <article class="markdown-body">
+      <blockquote>
+  <p>它需要zookeeper的调度，首先配置zookeeper</p>
+</blockquote>
+
+<h4 id="hdfs-ha热备不需要secondarynamenode">HDFS HA（热备、不需要secondarynamenode）</h4>
+<ul>
+  <li>namenode active 主要的，活动的</li>
+  <li>namenode standby(backup) 备用状态</li>
+</ul>
+
+<h4 id="问题起因">问题起因：</h4>
+<ol>
+  <li>namenode宕机，这段时间所有元数据丢失，hdfs无法提供服务。
+    <ul>
+      <li><code class="highlighter-rouge">SPOF（single point of failure）</code>单点故障即会整体故障。</li>
+    </ul>
+  </li>
+  <li>namenode节点，有一些服务需要升级，也需要停止服务才能升级</li>
+</ol>
+
+<h4 id="解决方法">解决方法</h4>
+<ol>
+  <li>操作日志信息给到journalnode管理（确保两个namenode都能同步更新edits）</li>
+  <li>配置两个namenode</li>
+  <li>客户端的访问实际地址，会自动分配到active的namenode</li>
+  <li>两个namenode要隔离，同一时刻只有一个namenode对外提供服务</li>
+</ol>
+
+<h4 id="配置信息">配置信息</h4>
+
+<h5 id="etchadoophdfs-sitexml">etc/hadoop/hdfs-site.xml</h5>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;property&gt;
+	# 对整个文件系统需要一个统称
+	&lt;name&gt;dfs.nameservices&lt;/name&gt;
+	&lt;value&gt;ns1&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+	# 指明这个文件系统的namenode有哪些
+	&lt;name&gt;dfs.ha.namenodes.ns1&lt;/name&gt;
+	&lt;value&gt;nn1,nn2&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+	# 指明nn1是哪个
+	&lt;name&gt;dfs.namenode.rpc-address.ns1.nn1&lt;/name&gt;
+	&lt;value&gt;hadoop1:8020&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+	# 指明nn2是那个
+	&lt;name&gt;dfs.namenode.rpc-address.ns1.nn2&lt;/name&gt;
+	&lt;value&gt;hadoop2:8020&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+	# 指明nn1访问地址端口
+	&lt;name&gt;dfs.namenode.http-address.ns1.nn1&lt;/name&gt;
+	&lt;value&gt;hadoop1:50070&lt;/value&gt;
+&lt;/property&gt;
+&lt;property&gt;
+	# 指明nn2访问地址端口
+	&lt;name&gt;dfs.namenode.http-address.ns1.nn2&lt;/name&gt;
+	&lt;value&gt;hadoop2:50070&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+	# 共享日志在journalnode上的共享端口
+	&lt;name&gt;dfs.namenode.shared.edits.dir&lt;/name&gt;
+	&lt;value&gt;qjournal://hadoop1:8485;hadoop2:8485;hadoop3:8485/ns1&lt;/value&gt;
+&lt;/property&gt;
+# 配置edits在journalnode上的保存地址
+&lt;property&gt;
+	&lt;name&gt;dfs.journalnode.edits.dir&lt;/name&gt;
+	# 注意这里的版本信息
+	&lt;value&gt;/opt/programs/hadoop-2.7.7/data/dfs/jn&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+	# 配置proxy代理客户端
+	&lt;name&gt;dfs.client.failover.proxy.provider.ns1&lt;/name&gt;
+	&lt;value&gt;org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider&lt;/value&gt;
+&lt;/property&gt;
+</code></pre></div></div>
+
+<h5 id="etchadoopcore-sitexml">etc/hadoop/core-site.xml</h5>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># 配置两个namenode的隔离策略
+# sshfence方式
+# 使用这种方式，必须实现ssh无密码登陆
+
+&lt;property&gt;
+	&lt;name&gt;dfs.ha.fencing.methods&lt;/name&gt;
+	&lt;value&gt;sshfence&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+	&lt;name&gt;dfs.ha.fencing.ssh.private-key-files&lt;/name&gt;
+	&lt;value&gt;/root/.ssh/id_rsa&lt;/value&gt;
+&lt;/property&gt;
+
+&lt;property&gt;
+    &lt;name&gt;fs.defaultFS&lt;/name&gt;
+    &lt;value&gt;hdfs://ns1&lt;/value&gt;
+&lt;/property&gt;
+
+</code></pre></div></div>
+
+<h5 id="最小化安装centos版本需要在每一个节点都手动安装fence组件psmisc">最小化安装CentOS版本，需要在每一个节点都手动安装fence组件psmisc</h5>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum -y install psmisc  
+</code></pre></div></div>
+
+<blockquote>
+  <p>psmisc包含fuser，killall，pstree三个程序，且出现上述问题是由于我们在安装centos7的时候选择了最小化安装，默认是不安装psmics。<br />
+fuser 显示使用指定文件或者文件系统的进程的PID。<br />
+killall 杀死某个名字的进程，它向运行指定命令的所有进程发出信号。<br />
+pstree 树型显示当前运行的进程。</p>
+</blockquote>
+
+<h4 id="启动集群">启动集群：</h4>
+
+<p>关闭所有守护进程，清除之前残留的data/tmp/*信息</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1.启动所有的journalnode
+    sbin/hadoop-daemon.sh start journalnode
+2.nn1格式化并启动
+    bin/hdfs namenode -format
+    sbin/hadoop-daemon.sh start namenode
+3.在nn2上，同步nn1的元数据信息
+    bin/hdfs namenode -bootstrapStandby
+4.启动nn2
+    sbin/hadoop-daemon.sh start namenode
+5.启动datanode节点
+    sbin/hadoop-daemon.sh start datanode
+6.把节点设置为active
+    bin/hdfs haadmin -transitionToActive nn1
+</code></pre></div></div>
+
+<h3 id="自动故障转移借助于zookeeper">自动故障转移，借助于zookeeper</h3>
+<ol>
+  <li>启动时都是standby，选举一个为active</li>
+  <li>监控 ZKFC, 给每一个namenode都增加一个ZKFC服务。</li>
+</ol>
+
+<h4 id="配置">配置</h4>
+
+<p>hdfs-site.xml:增加。 打开自动故障转移</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;property&gt;
+	&lt;name&gt;dfs.ha.automatic-failover.enabled&lt;/name&gt;
+	&lt;value&gt;true&lt;/value&gt;
+&lt;/property&gt;
+</code></pre></div></div>
+
+<p>core-site.xml: 添加zookeeper的服务</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&lt;property&gt;
+	&lt;name&gt;ha.zookeeper.quorum&lt;/name&gt;
+	&lt;value&gt;hadoop1:2181,hadoop2:2181,hadoop3:2181&lt;/value&gt;
+&lt;/property&gt;
+</code></pre></div></div>
+
+<h4 id="启动">启动</h4>
+<ol>
+  <li>关闭所有hdfs服务，scp同步修改的文件</li>
+  <li>启动zookeeper脚本，每个节点都启动. <code class="highlighter-rouge">bin/zkServer start</code></li>
+  <li>启动zookeeper集群， <code class="highlighter-rouge">sbin/hadoop-daemon.sh start journalnode</code></li>
+  <li>
+    <p>初始化HA在zookeeper中的状态</p>
+
+    <p><code class="highlighter-rouge">bin/hdfs zkfc -formatZK -force</code></p>
+  </li>
+  <li>
+    <p>启动hdfs服务。如果直接一起启动出现通信错误，造成namenode停止，则<strong>需要先启动journalnode，再启动其他</strong></p>
+  </li>
+  <li>
+    <p>namenode节点启动zkfc服务。先在哪台节点启动zkfc，那么哪台就是active</p>
+
+    <p><code class="highlighter-rouge">sbin/hadoop-daemon.sh start zkfc</code></p>
+  </li>
+</ol>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/hadoop/2018/12/Hadoop-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.html" class="read-next-link"></a>
+        <section>
+          <span>[Hadoop]基础知识</span>
+          <p>1 Hadoop</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html" class="read-next-link"></a>
+          <section>
+            <span>[HDFS]上传和下载</span>
+            <p>客户端上传数据:</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

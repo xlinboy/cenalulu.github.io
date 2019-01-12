@@ -1,0 +1,75 @@
+[
+  
+    {
+      "title"    : "[Yarn]介绍",
+      "tags"     : "Yarn",
+      "url"      : "/yarn/2018/12/yarn.html"
+    } ,
+  
+    {
+      "title"    : "[Sqoop]操作",
+      "tags"     : "Sqoop",
+      "url"      : "/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80%E6%93%8D%E4%BD%9C.html"
+    } ,
+  
+    {
+      "title"    : "[Sqoop]基础知识",
+      "tags"     : "Sqoop",
+      "url"      : "/sqoop/2018/12/Sqoop-%E5%9F%BA%E7%A1%80.html"
+    } ,
+  
+    {
+      "title"    : "[Sqoop]操作实战",
+      "tags"     : "Sqoop",
+      "url"      : "/sqoop/2018/12/Sqoop-%E4%BF%AE%E6%94%B9%E8%AF%AF%E5%B7%AE%E6%95%B0%E6%8D%AE.html"
+    } ,
+  
+    {
+      "title"    : "[Secondary NameNode]详解",
+      "tags"     : "Hadoop",
+      "url"      : "/hadoop/2018/12/Secondary-NameNode-(SNN).html"
+    } ,
+  
+    {
+      "title"    : "[Mapreduce]执行流程",
+      "tags"     : "Hadoop",
+      "url"      : "/hadoop/2018/12/MapReduce-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.html"
+    } ,
+  
+    {
+      "title"    : "[Hadoop]安装方式",
+      "tags"     : "Hadoop",
+      "url"      : "/hadoop/2018/12/Hadoop-%E5%AE%89%E8%A3%85%E6%96%B9%E5%BC%8F.html"
+    } ,
+  
+    {
+      "title"    : "[Hadoop]基础知识",
+      "tags"     : "Hadoop",
+      "url"      : "/hadoop/2018/12/Hadoop-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.html"
+    } ,
+  
+    {
+      "title"    : "[HDFS]高可用",
+      "tags"     : "HDFS",
+      "url"      : "/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html"
+    } ,
+  
+    {
+      "title"    : "[HDFS]上传和下载",
+      "tags"     : "HDFS",
+      "url"      : "/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html"
+    } ,
+  
+    {
+      "title"    : "[GITHUB]介绍",
+      "tags"     : "Hadoop",
+      "url"      : "/hadoop/2018/12/GITHUB.html"
+    } ,
+  
+    {
+      "title"    : "[flume]基础语法",
+      "tags"     : "Flume",
+      "url"      : "/flume/2018/12/Flume-%E5%9F%BA%E7%A1%80.html"
+    } 
+  
+]
