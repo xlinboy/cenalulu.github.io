@@ -1,7 +1,7 @@
 # Site settings 配置站点
 title: 'xlin的个人博客'
 description: '记录编程的学习笔记'
-keyword: 'xlin, xlinBoy的个人博客, spark, hadoop, Hive, hbase...'
+keyword: 'xlin, 大数据, xlin的个人博客'
 url: 'http://xlinboy.github.io' # your host
 
 # if you don't need baseurl, you should leave this value blank.
@@ -18,9 +18,9 @@ footer:
   since: 2018
 
 # Author 配置博主信息
-author: 'xlin'
+author: 'xlinboy'
 nickname: 'xlinboy'
-bio: 'spark/hadoop/Hive/hbase'
+bio: '即将步入社会的年轻营'
 avatar: '/assets/img/colorama-header.jpg'
 
 # Search

@@ -4,7 +4,7 @@ title: '[HBase]知识点'
 subtitle: 'HBase基础问答题'
 date: 2018-12-16
 categories: Hbase
-cover: '../../../assets/img/hbase_logo_with_orca_large.png'
+cover: '../../../assets/img/hbase.png'
 tags: HBase
 ---
 

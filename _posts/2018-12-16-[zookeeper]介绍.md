@@ -4,7 +4,7 @@ title:  "[Zookeeper]介绍"
 subtitle: 'Zookeeper工作机制及选举机制'
 date: 2018-12-16
 categories: Zookeeper
-cover: '../../../assets/img/hbase_logo_with_orca_large.png'
+cover: '../../../assets/img/hbase.png'
 tags: Zookeeper
 ---
 
