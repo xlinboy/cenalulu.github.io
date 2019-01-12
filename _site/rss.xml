@@ -5,9 +5,161 @@
     <description>记录编程的学习笔记</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sat, 12 Jan 2019 16:52:09 +0800</pubDate>
-    <lastBuildDate>Sat, 12 Jan 2019 16:52:09 +0800</lastBuildDate>
+    <pubDate>Sat, 12 Jan 2019 18:19:20 +0800</pubDate>
+    <lastBuildDate>Sat, 12 Jan 2019 18:19:20 +0800</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>[Zookeeper]介绍</title>
+        <description>&lt;h3 id=&quot;zookeeper-概念简介&quot;&gt;Zookeeper 概念简介&lt;/h3&gt;
+
+&lt;p&gt;Zookeeper是一个分布式协调服务；就是为用户的分布式应用程序提供协调服务。&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;为分布式程序提供服务&lt;/li&gt;
+  &lt;li&gt;本身是一个分布式程序，只要半数以上存活,zk正常提供服务&lt;/li&gt;
+  &lt;li&gt;zookeeper 涵盖：主从协调、统一名称服务…&lt;/li&gt;
+  &lt;li&gt;zookeeper 底层只提供两个功能：
+    &lt;ul&gt;
+      &lt;li&gt;管理（存储，读取）用户程序提交的数据&lt;/li&gt;
+      &lt;li&gt;并为用户程序提供数据节点监听服务&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Zookeeper默认只有leader和follower，没有observer。&lt;/p&gt;
+
+&lt;p&gt;集群通过选举过程来选举来选定leader的机器， leader服务器为客户端提供读和写服务。&lt;/p&gt;
+
+&lt;p&gt;Follower和Observer都能提供服务，不能提供写服务。Observer不参与Leader选举，也不参与写操作（过半写成功）策略。&lt;/p&gt;
+
+&lt;h3 id=&quot;zookeeper工作机制&quot;&gt;zookeeper工作机制&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;基于观察者模式设计的分布式服务管理框架。&lt;/li&gt;
+  &lt;li&gt;存储和管理大家都关心的数据（可自定义），然后接受观察者注册&lt;/li&gt;
+  &lt;li&gt;一旦这些数据状态发生变化，zookeeper就将负责通知已经在zookeeper上注册的那些观察者(observer)做出相应的反应&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;zookeeper = 文件系统 + 通知机制&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;zookeeper-结构和特性&quot;&gt;zookeeper 结构和特性&lt;/h3&gt;
+
+&lt;h4 id=&quot;zookeeper-特性&quot;&gt;zookeeper 特性&lt;/h4&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;主从，一个leader, 多个follower组成的集群&lt;/li&gt;
+  &lt;li&gt;全局数据一致：每个server保存一份相同的数据副本，client无论连接到哪个server，数据都是一致的&lt;/li&gt;
+  &lt;li&gt;leader：分布式读写，更新请求转发&lt;/li&gt;
+  &lt;li&gt;同一个client请求，FIFO&lt;/li&gt;
+  &lt;li&gt;数据更新原子性。一次数据要么成功，要么失败。&lt;/li&gt;
+  &lt;li&gt;实时性，一定时间范围内,client能读最新数据。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;zookeeper-数据结构&quot;&gt;zookeeper 数据结构&lt;/h4&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;树型结构&lt;/li&gt;
+  &lt;li&gt;每个节点在zookeeper中叫Zonde，并且有唯一标识&lt;/li&gt;
+  &lt;li&gt;每个Zonde默认能够存储1MB数据，包含数据和子节点&lt;/li&gt;
+  &lt;li&gt;客户端应用可以在节点上设置监听器&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;节点类型&quot;&gt;节点类型&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Zonde有两种类型
+    &lt;ul&gt;
+      &lt;li&gt;短暂 ephemeral, 断开链接即删除&lt;/li&gt;
+      &lt;li&gt;持久 persistent, 断开链接不删除&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Zonde有四种形式的目录节点（默认是persistent）
+    &lt;ul&gt;
+      &lt;li&gt;PERSISTENT&lt;/li&gt;
+      &lt;li&gt;PERSISTENT_SEQUENTIAL（持久序列/test0000000019 ）&lt;/li&gt;
+      &lt;li&gt;EPHEMERAL&lt;/li&gt;
+      &lt;li&gt;EPHEMERAL_SEQUENTIAL&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;创建znode时设置顺序标识，znode名称后会附加一个值，顺序号是一个单调递增的计数器，由父节点维护&lt;/li&gt;
+  &lt;li&gt;分布式系统中，顺序号可以被用于所有的事件，进行全局排序，这样客户端可以通过顺序号推断事件的顺序。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;状态信息&quot;&gt;状态信息&lt;/h3&gt;
+&lt;p&gt;每个ZNode除了存储数据内容之外，还存储了ZNode本身的一些状态信息。用 get 命令可以同时获得某个ZNode的内容和状态信息。如下：&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;cZxid = 0xb00000002	事务id
+ctime = Thu Nov 01 02:32:12 CST 2018	创建时间
+mZxid = 0xb0000000e	最后更新的事物id
+mtime = Thu Nov 01 02:39:36 CST 2018	最后修改的时间
+pZxid = 0xb0000000f	最后更新的子节点事务id
+cversion = 1	子节点修改次数
+dataVersion = 1	数据变化号
+aclVersion = 0	访问控制列表的变化号
+ephemeralOwner = 0x0	临时节点的拥有者sessionid，若非临时节点，则为0
+dataLength = 5	数据长度
+numChildren = 1	子节点数量
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h3 id=&quot;watcher&quot;&gt;Watcher&lt;/h3&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;Watcher（事件监听器），是ZooKeeper中一个很重要的特性。ZooKeeper允许用户在指定节点上注册一些Watcher，并且在一些特定事件触发的时候，ZooKeeper服务端会将事件通知到感兴趣的客户端上去。该机制是ZooKeeper实现分布式协调服务的重要特性。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;监听器原理-&quot;&gt;监听器原理： *&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/kDb2J2mA4i.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;main()方法，启动client&lt;/li&gt;
+  &lt;li&gt;在main线程中，创建client,这时会创建两个线程，一个负责网络连接通信(connect), 一个负责监听(listener)。&lt;/li&gt;
+  &lt;li&gt;通过connect线程将注册的监听时间发送给zookeeper&lt;/li&gt;
+  &lt;li&gt;在zookeeper的注册监听器列表中将注册的监听时间添加到列表&lt;/li&gt;
+  &lt;li&gt;zookeeper监听到有数据或路径变化，就会将消息发送给listener线程&lt;/li&gt;
+  &lt;li&gt;listener线程内部调用process()方法。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;写数据流程&quot;&gt;写数据流程&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/3KdEaimBf6.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;client 连接到集群中的某一个节点&lt;/li&gt;
+  &lt;li&gt;client 向server1发送写请求&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;若server1 不是leader，server转发给leader&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;leader会将写请求广播给各个server，leader会认识数据写成功了，并通知给server1&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;若半数以上的server都写成功了，leader会认为写操作成功，并通知server1&lt;/li&gt;
+  &lt;li&gt;server1通知client，数据写成功了。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;zookeeper-的选举机制&quot;&gt;zookeeper 的选举机制&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;半数机制： 投票数达半数以上为leader&lt;/li&gt;
+  &lt;li&gt;自私制 + 大数制&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;假设有5台机器&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;node1先启动，投票给自己，5台机器只有1票，作废&lt;/li&gt;
+  &lt;li&gt;node2启动，node1投票给自己没有用，投票给node2，node2也投给自己，node2有两票&lt;/li&gt;
+  &lt;li&gt;node3启动，node1投给myid最大的节点，node3，node2也投node3，node3也投自己，node3有3票，node3为leader&lt;/li&gt;
+  &lt;li&gt;node4启动， node5启动&lt;/li&gt;
+&lt;/ol&gt;
+
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/zookeeper/2018/12/zookeeper-%E4%BB%8B%E7%BB%8D.html</link>
+        <guid isPermaLink="true">http://localhost:4000/zookeeper/2018/12/zookeeper-%E4%BB%8B%E7%BB%8D.html</guid>
+        
+        <category>Zookeeper</category>
+        
+        
+        <category>Zookeeper</category>
+        
+      </item>
     
       <item>
         <title>[Yarn]介绍</title>
@@ -930,6 +1082,332 @@ blocksize
       </item>
     
       <item>
+        <title>[HBase]操作</title>
+        <description>&lt;h3 id=&quot;1-shell-创建表的多种形式&quot;&gt;1. shell 创建表的多种形式&lt;/h3&gt;
+
+&lt;p&gt;注意命名空间、多个列簇及属性&lt;/p&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;Create&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;namespace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ns1&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;qualifier&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t1&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'ns1:t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;VERSIONS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;Create&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;namespace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;and&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;qualifier&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t1&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f2'&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f3'&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;The&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;above&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shorthand&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;would&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;be&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;following&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f2'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f3'&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;VERSIONS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TTL&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2592000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BLOCKCACHE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CONFIGURATION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'hbase.hstore.blockingStoreFiles'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'10'&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h3 id=&quot;2-预分区&quot;&gt;2. 预分区&lt;/h3&gt;
+&lt;p&gt;table 逻辑上的分区，以行的形式存储&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;region 
+startkey, endkey
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;ul&gt;
+  &lt;li&gt;默认情况下，创建表hbase表会自动为表分区&lt;/li&gt;
+  &lt;li&gt;一般情况下，创建好表之后，会导入大量数据
+    &lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;file&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bulk&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;load&lt;/span&gt;
+    
+  &lt;span class=&quot;n&quot;&gt;region&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;managed&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;regionserver&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;split&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;two&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;region&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+      &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+      &lt;span class=&quot;n&quot;&gt;regionserver&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;负载大&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;所以，一般会在创建表的时候就创建多个region，依据表的rowkey进行设计，结合业务&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;如何预先创建多个region？ &lt;strong&gt;hbase表的预分区&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;region划分依赖rowkey，预估rowkey的划分准则&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;region划分依赖rowkey，预估rowkey的划分准则&lt;/p&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'ns1:t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SPLITS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'10'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'20'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'30'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'40'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'h_work'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'info'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SPLITS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'001'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'002'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'003'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'004'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'007'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'015'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'050'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'100'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'150'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'200'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'250'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'300'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SPLITS_FILE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'splits.txt'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;OWNER&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'johndoe'&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;VERSIONS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;METADATA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'mykey'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'myvalue'&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Optionally&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pre&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;split&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;the&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;into&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NUMREGIONS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;using&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;#&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SPLITALGO&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;&quot;HexStringSplit&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;&quot;UniformSplit&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;or&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;classname&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NUMREGIONS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SPLITALGO&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'HexStringSplit'&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NUMREGIONS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SPLITALGO&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'HexStringSplit'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;REGION_REPLICATION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CONFIGURATION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'hbase.hregion.scan.loadColumnFamiliesOnDemand'&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'true'&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;create&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'t1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'f1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DFS_REPLICATION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;如：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;create ‘logs’,’info’,SPLITS =&amp;gt; [‘20181010’,’20181020’,’20181030’]&lt;/li&gt;
+  &lt;li&gt;指定分隔文件
+ create ‘logs’,’info’,SPLITS =&amp;gt; ‘opt/datas/logs_split.txt’&lt;/li&gt;
+  &lt;li&gt;指定多少分区，十六进制字符串分割
+ create ‘t1’, ‘f1’, {NUMREGIONS =&amp;gt; 3, SPLITALGO =&amp;gt; ‘HexStringSplit’}&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;表属性&quot;&gt;表属性&lt;/h3&gt;
+&lt;p&gt;查看一张表的属性，describe ‘user’&lt;/p&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;COLUMN&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;FAMILIES&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DESCRIPTION&lt;/span&gt;                                                     
+&lt;span class=&quot;err&quot;&gt;{&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'info'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;BLOOMFILTER&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'ROW'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;err&quot;&gt;布隆过滤器&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;VERSIONS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;IN_MEMORY&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'false'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;KEEP_DELETED_CELLS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'FALSE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;DATA_BLOCK_ENCODING&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'NONE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 	
+&lt;span class=&quot;n&quot;&gt;TTL&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'FOREVER'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;COMPRESSION&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'NONE'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 	&lt;span class=&quot;err&quot;&gt;压缩属性&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;hadoop&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;checknative&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;查看当前&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hadoop&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;支持哪些压缩&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;MIN_VERSIONS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'0'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;BLOCKCACHE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'true'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;BLOCKSIZE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'65536'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;REPLICATION_SCOPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'0'&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h4 id=&quot;1-压缩属性&quot;&gt;1. 压缩属性&lt;/h4&gt;
+&lt;p&gt;配置hbase的snappyd压缩&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;配置hadoop 的压缩配置&lt;/li&gt;
+  &lt;li&gt;配置hbase
+    &lt;ul&gt;
+      &lt;li&gt;hadoop-snappy-0.0.1-SNAPSHOT.jar放到hbase的lib下&lt;/li&gt;
+      &lt;li&gt;需要将本地的库native内容放到hbase的lib下的native目录下&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;创建软连接即可&lt;/p&gt;
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;ln&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HADOOP_HOME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;native&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;$&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HBASE_HOME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;native&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Linux&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;amd64&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;然后创建表的时候，可以指定d压缩属性。&lt;/p&gt;
+
+&lt;p&gt;需要强制告诉regionserver，配置hbase.regionserver.codecs的value为snappy，且重启regionserver生效&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;但是如果原表里面已经有了很多数据，那么压缩是不会生效的&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;2-regionserver的内存&quot;&gt;2. regionserver的内存&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;memstore 40%&lt;/li&gt;
+  &lt;li&gt;blockcache 40%，块缓存每个regionserver只有一个blockcache&lt;/li&gt;
+  &lt;li&gt;other&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;客户端读取数据会从三个地方读取数据，按顺序读取&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;memstore&lt;/li&gt;
+  &lt;li&gt;blockcache&lt;/li&gt;
+  &lt;li&gt;hfile
+然后进行merge合并，返回数据集。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h5 id=&quot;cache的等级&quot;&gt;cache的等级&lt;/h5&gt;
+&lt;ul&gt;
+  &lt;li&gt;immemory:0.25, 即缓存数据放在不轻易删除的内存中，如meta元数据信息。&lt;code class=&quot;highlighter-rouge&quot;&gt;describe 'inmemory'&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;multi:0.50, 即比较重要的数据&lt;/li&gt;
+  &lt;li&gt;single:0.25, 即可以缓存也可以不缓存的信息，最少使用的会加入到淘汰算法&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;表的compaction&quot;&gt;表的compaction&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;minor合并:多个小文件合并成多个大文件，即多路归并，受磁盘IO影响。&lt;/li&gt;
+  &lt;li&gt;major合并，将一个region中的一列簇的所有hfile重写为一个新的hfile。扫描所有的键值对，顺序重写全部的数据。重写数据过程，略过做了删除标记的数据，以及超出版本号限制的数据。&lt;/li&gt;
+  &lt;li&gt;重量级合并：阻塞所有的region的请求，有时间限制 ，直到合并完毕。小心死循环&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;hbasehiveimpala&quot;&gt;HBase+Hive/impala&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;https://cwiki.apache.org/confluence/display/hive/hbaseintegration&lt;/code&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;数据存储在HBase&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;表的描述信息存储在hive中
+ hive从0.9.0版本才开始支持与HBase集成&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;集成方式&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;管理表&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;gt;  创建hive表的时候，指定数据存储在hbase表中
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;外部表&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;现在已经存在了一个hbase表，需要对表中的数据进行分析&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;本质&lt;/p&gt;
+
+    &lt;blockquote&gt;
+      &lt;p&gt;hive就是hbase的客户端，需要jar包以及配置&lt;/p&gt;
+    &lt;/blockquote&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;需要将hbase的依赖jar拷贝到hive/lib下&lt;/p&gt;
+
+    &lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;err&quot;&gt;包括&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;common&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;server&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;client&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;protocol&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;it&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hadoop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;compat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hadoop2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;compat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;high&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;scale&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;htrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;core&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;zookeeper&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;....&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;guave&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;err&quot;&gt;版本要一致，以&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hbase&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;版本为准&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;
+        &lt;p&gt;在hive-site.xml文件中，添加zookeeper参数&lt;/p&gt;
+
+        &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hbase.zookeeper.quorum
+hadoop1,hadoop2,hadoop3
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+  &lt;li&gt;创建一张hive管理表
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  CREATE TABLE hbase_table_1(key int, value string) 
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES (&quot;hbase.columns.mapping&quot; = &quot;:key,cf1:val&quot;)
+  TBLPROPERTIES (&quot;hbase.table.name&quot; = &quot;xyz&quot;, &quot;hbase.mapred.output.outputtable&quot; = &quot;xyz&quot;);
+       
+  建表之后，查看表的描述信息
+  hive&amp;gt; desc formatted hbase_table_1;
+  hbase&amp;gt; describe 'xyz'
+       
+  使用hive语句导入数据
+  hbase&amp;gt; scan 'xyz'
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;外部表
+   即把已有的hbase表映射到hive的表&lt;/p&gt;
+
+    &lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;   &lt;span class=&quot;k&quot;&gt;CREATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;EXTERNAL&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;TABLE&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hbase_table_2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;key&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;string&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+   &lt;span class=&quot;n&quot;&gt;STORED&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;BY&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'org.apache.hadoop.hive.hbase.HBaseStorageHandler'&lt;/span&gt;
+   &lt;span class=&quot;k&quot;&gt;WITH&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;SERDEPROPERTIES&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;&quot;hbase.columns.mapping&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;&quot;cf1:val&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;TBLPROPERTIES&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;&quot;hbase.table.name&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;&quot;some_existing_table&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;&quot;hbase.mapred.output.outputtable&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;&quot;some_existing_table&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;应用场景
+    &lt;ul&gt;
+      &lt;li&gt;有时候的数据迁移也是用这种方法&lt;/li&gt;
+      &lt;li&gt;如日志文件保存到hbase表&lt;/li&gt;
+      &lt;li&gt;导入hive表，使用列分割全表数据&lt;/li&gt;
+      &lt;li&gt;查询数据并写入hive-hbase-table&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hbase/2018/12/Hbase-%E6%B7%B1%E5%85%A5.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hbase/2018/12/Hbase-%E6%B7%B1%E5%85%A5.html</guid>
+        
+        <category>HBase</category>
+        
+        
+        <category>Hbase</category>
+        
+      </item>
+    
+      <item>
+        <title>[Hadoop]文件存储格式</title>
+        <description>&lt;h3 id=&quot;rcfile&quot;&gt;RCFile&lt;/h3&gt;
+
+&lt;p&gt;RCFile文件格式是FaceBook开源的一种Hive的文件存储格式，首先将表分为几个行组，对每个行组内的数据进行按列存储，每一列的数据都是分开存储，正是先水平划分，再垂直划分的理念。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/RFCile.jpg&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;数据部分我们可以看出RCFile将每一行，存储为一列，将一列存储为一行。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/RCFile2.jpg&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;而RCFile由于相同的列都是在一个HDFS块上，所以相对列存储而言会节省很多资源&lt;/p&gt;
+
+&lt;h3 id=&quot;orcfile&quot;&gt;ORCFile&lt;/h3&gt;
+
+&lt;p&gt;ORC的全称是(Optimized Row Columnar)，它并不是一个单纯的列式存储格式，仍然是首先根据行组分割整个表，在每一个行组内进行按列存储。&lt;/p&gt;
+
+&lt;p&gt;ORC on hive优势：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;多个输出写到同一个文件上，减少namenode压力&lt;/li&gt;
+  &lt;li&gt;文件是可切分（spilt）&lt;/li&gt;
+  &lt;li&gt;提供了多种索引&lt;/li&gt;
+  &lt;li&gt;支持复杂的数据结构&lt;/li&gt;
+  &lt;li&gt;基于块压缩&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;orc-file-structure&quot;&gt;ORC file structure&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/OrcFileLayout.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;orc--parquet&quot;&gt;ORC &amp;amp; parquet&lt;/h4&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/orc_and_parquet.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;列式存储压缩原理&quot;&gt;列式存储压缩原理&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/encoding.png&quot; alt=&quot;img&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;数据压缩算法&quot;&gt;数据压缩算法&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;delta-encoding 差分编码，增量编码
+    &lt;ul&gt;
+      &lt;li&gt;是通过储存差异来达到压缩的目标。&lt;/li&gt;
+      &lt;li&gt;比如：
+        &lt;ul&gt;
+          &lt;li&gt;输入串：1000, 1001, 1002, 1005&lt;/li&gt;
+          &lt;li&gt;压缩后：1000, 1, 2, 5&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;适用场景：有序数据集，例如timestamp&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;dictionary encoding 字典编码
+    &lt;ul&gt;
+      &lt;li&gt;提供一个字典，如果输入串中的单词&lt;strong&gt;命中&lt;/strong&gt;字典，则用字典中的位置来替换这个词。&lt;/li&gt;
+      &lt;li&gt;适用场景：小规模的集合，例如IP地址&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;run length encoding 流程编码
+    &lt;ul&gt;
+      &lt;li&gt;用一个符号或串长代替具有相同值的连续符号&lt;/li&gt;
+      &lt;li&gt;一个例子：
+        &lt;ul&gt;
+          &lt;li&gt;输入串：AAAAAAAAAAAAAAA AAAAAAAAAAAAAAA AAA&lt;/li&gt;
+          &lt;li&gt;压缩后为：15A 15A 3A&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;适用场景：重复数据&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/hadoop/2018/12/Hadoop-%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hadoop/2018/12/Hadoop-%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F.html</guid>
+        
+        <category>Hadoop</category>
+        
+        
+        <category>Hadoop</category>
+        
+      </item>
+    
+      <item>
         <title>[Hadoop]安装方式</title>
         <description>&lt;h2 id=&quot;下载&quot;&gt;下载&lt;/h2&gt;
 
@@ -1234,651 +1712,6 @@ yarn的web监控端口是8088
         
         
         <category>Hadoop</category>
-        
-      </item>
-    
-      <item>
-        <title>[Hadoop]基础知识</title>
-        <description>&lt;h3 id=&quot;1-hadoop&quot;&gt;1 Hadoop&lt;/h3&gt;
-
-&lt;p&gt;Hadoop可以看做将MapReduce计算转移到存储有部分数据的各台机器上。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;三大设计目标：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;为只需要几分钟或几小时就能完成的任务提供服务。&lt;/li&gt;
-  &lt;li&gt;运用于同一个内部有高速网络连接的数据中心内。&lt;/li&gt;
-  &lt;li&gt;数据中心内的计算机都是可靠的、专门的硬件&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;11-普通分析&quot;&gt;1.1 普通分析&lt;/h4&gt;
-
-&lt;p&gt;并行处理程序进行数据分析：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;将任务划分成大小相同的作业。&lt;/li&gt;
-  &lt;li&gt;合并各个独立进程的运行结果，可能还需要进行额外处理。&lt;/li&gt;
-  &lt;li&gt;受限单台计算机的处理能力。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;12-使用hadoop来分析数据&quot;&gt;1.2 使用Hadoop来分析数据&lt;/h4&gt;
-
-&lt;p&gt;MapReduce任务过程分两个阶段：都以键-值对做为输入和输出&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;map阶段：数据准备
-    &lt;ul&gt;
-      &lt;li&gt;提取想要的字段，以及去除已损数据；&lt;/li&gt;
-      &lt;li&gt;输入的是NCDC原始数据。默认为文本格式&lt;/li&gt;
-      &lt;li&gt;键(key)是文件中的行偏移量，值(value)为文本格式的数据&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;reduce阶段：数据处理
-    &lt;ul&gt;
-      &lt;li&gt;比如：这个处理基于键-值对进行排序和分组&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt; Unix管线模拟整个MapReduce的逻辑数据流
-&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/6Imgg309g2.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;hadoop将作业分成若干个任务(task)来执行：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;map任务&lt;/li&gt;
-  &lt;li&gt;reduce任务&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;由YARN进行调度，第一个分片都会构建一个map任务&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;一个Reduce任务的MapReduce数据流：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/97i6I30LmC.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;如果有多个map任务就会针对输出进行分区(partintion),即为每一个reduce任务建一个分区&lt;/p&gt;
-
-&lt;p&gt;多个任务的数据流图：shuffle&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/hi48HeLbJf.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;数据处理可以完全并行（无需混洗）&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/hi48HeLbJf.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;combiner函数&quot;&gt;combiner函数&lt;/h4&gt;
-
-&lt;p&gt;​    可以针对map任务的输出指定一个 combiner ,combiner 函数的输出作为reduce 函数的输入。&lt;/p&gt;
-
-&lt;h2 id=&quot;2-hdfs&quot;&gt;2 HDFS&lt;/h2&gt;
-&lt;p&gt;HDFS是Hadoop的文件系统，实际上Hadoop是一个综合性的文件系统抽象。&lt;/p&gt;
-
-&lt;h4 id=&quot;21-数据块&quot;&gt;2.1 数据块&lt;/h4&gt;
-
-&lt;p&gt;HDFS块(block)默认为128M(以前的版本默认是64M)。与面向单一磁盘文件不同的是，HDFS中小于一个块大小的文件不会占据整个空间。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;HDFS的块比磁盘的块大，目的是为了最小化寻址开销。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;strong&gt;优点：&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;文件大小可以大于网络中任意一个磁盘容量&lt;/li&gt;
-  &lt;li&gt;使用抽象块而非整个文件作为存储单元，简化了存储子系统的设计&lt;/li&gt;
-  &lt;li&gt;适合用于数据备份&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;22-namenode和datanode&quot;&gt;2.2 namenode和datanode&lt;/h4&gt;
-
-&lt;p&gt;客户端(client)：代表用户通过与namenode和datanode交互访问整个文件系统。&lt;/p&gt;
-
-&lt;h5 id=&quot;221-namenode-管理节点&quot;&gt;2.2.1 namenode (管理节点)&lt;/h5&gt;
-
-&lt;p&gt;  管理着整个HDFS文件系统的元数据。记录每个文件中各个块所在的数据节点信息，它并不永久保存块的位置信息，因为这些信息会在系统启动时根据数据节点信息重建。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;初始化:
-    &lt;ul&gt;
-      &lt;li&gt;生成fsimage 和 blockpool 编号&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;启动：
-    &lt;ul&gt;
-      &lt;li&gt;把残留的edits和fsiamge合并&lt;/li&gt;
-      &lt;li&gt;datanode向namenode进行汇报（安全模式），元数据的校验，验证datanode是否正常启动之后 ，datanode会和namenode保持心跳的交换。 默认保持10S的心中信息&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;元数据大概分两个层次：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;Namespace管理层，负责管理文件系统中的树状目录结构以及文件与数据块的映射关系
-    &lt;ul&gt;
-      &lt;li&gt;Namespace管理的元数据除内存常驻外，也会周期Flush到持久化设备上FsImage文件&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;BolcksMap块管理层，负责管理文件系统中文件的物理块与实际存储位置的映射关系。
-    &lt;ul&gt;
-      &lt;li&gt;BlocksMap元数据只在内存中存在&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;​       当NameNode发生重启，首先从持久化设备中读取FsImage构建Namespace，之后根据DataNode的汇报信息重新构造BlocksMap。&lt;/p&gt;
-
-&lt;p&gt;HDFS对namenode两种容错机制:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;备份那些组成文件系统元数据持久状态的文件。Hadoop可以通过配置使namenode在多个文件系统上保存元数据的持久状态。&lt;/li&gt;
-  &lt;li&gt;辅助的namenode(Second NameNode)，但它不能作namenode。它会定期合并编辑日志(edits log)与命名空间镜像(fsimage),以防止日志过大。这个辅助namenode一般会在另一台单独的物理计算机上运行，因为它需要占用大量CPU时间，并且需要与namenode一样多的内存来执行合并操作。但是，辅助namenode保存的状态滞后于主节点，所以在主节点全部失效时，难免会丢失部分数据。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h6 id=&quot;namenode安全模式safenode&quot;&gt;namenode安全模式(safenode)&lt;/h6&gt;
-&lt;ul&gt;
-  &lt;li&gt;namenode在刚启动时，内存中只有文件和文件的块id及副本数量，不知道datanode在哪里。&lt;/li&gt;
-  &lt;li&gt;namenode需要等待所有datanode向他汇报自身持有的块信息，namenode才能在元数据中补全文件块信息中的位置信息。&lt;/li&gt;
-  &lt;li&gt;只有当namenode长到99.8%的块位置信息，才会即出安全模式，正常对外提供服务。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;222-datanode-工作节点&quot;&gt;2.2.2 datanode (工作节点)&lt;/h4&gt;
-
-&lt;p&gt;  是文件系统的工作节点。它们根据需要存储并检索数据块（受客户端或namenode调试），并定期向namenode发送它们所存储的块的列表。&lt;/p&gt;
-
-&lt;p&gt;datanode为什么要定期汇报自身block信息:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;当集群中某些副本失效时，集群如何恢复block初始副本数量的问题。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;datanode上保存文件，是以block的形式保存。block默认大小为128M。块的大小根据上传文件的大小/block的大小。&lt;/p&gt;
-
-&lt;p&gt;data保存时，会有一个副本机制，默认是会为每个文件保存3份(dfs.replication)。&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;block的分配原则(网络距离越近，优先程度越高)&lt;/strong&gt;:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;和客户端在同一个机架的节点&lt;/li&gt;
-  &lt;li&gt;和客户端在不同机架的节点&lt;/li&gt;
-  &lt;li&gt;和客户端在同一个机架的其他一个节点&lt;/li&gt;
-  &lt;li&gt;负载均衡&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;datanode故障无法与namenode通信&lt;/strong&gt;:&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;namenode不会立即判断datanode死亡，要经过一段时间，这段时间称作超时时长。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;datanode为什么要用block的形式来存放数据？&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;大文件存放无压力&lt;/li&gt;
-  &lt;li&gt;高可用&lt;/li&gt;
-  &lt;li&gt;blocke有规律的存储和读取&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;鉴于block保存机制，使用hdfs来存放文件的时候，需要注意些什么？&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;hdfs更适合放大文件。&lt;/li&gt;
-  &lt;li&gt;3ktxt，block形式存放，占用空间是依然是3k，但是会占用一个block。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;hdfs dfsadmin -report&lt;/code&gt; ：可以通过此命令查看块信息&lt;/p&gt;
-
-&lt;h4 id=&quot;23-hdfs高可用&quot;&gt;2.3 HDFS高可用&lt;/h4&gt;
-
-&lt;p&gt;默认没有高可用机制。可以通过配置实现。&lt;/p&gt;
-
-&lt;p&gt;活动-备用(active-standby)namenode。当活动namenode失效，备用namenode就会接管它的任务，并开始服务于客户端的请求，不会有任务明显中断。&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;namenode之间需要通过高可以用共享存储编辑日志的共享。&lt;/li&gt;
-  &lt;li&gt;datanode需要同时向两个namenode发送数据块处理报告。数据块的映射信息存储在namenode的内存中。&lt;/li&gt;
-  &lt;li&gt;辅助namenode的角色被备用namenode所包含，备用namenode为活动namenode命名空间设置周期性检查点。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h5 id=&quot;231-故障切换与规避&quot;&gt;2.3.1 故障切换与规避&lt;/h5&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;故障转移控制器(failover controller):  管理将活动的namenode转移为备用namenode的转换过程。
-    &lt;ul&gt;
-      &lt;li&gt;默认使用ZooKeeper来确保有且仅有一个活动namenode。&lt;/li&gt;
-      &lt;li&gt;第一个namenode运行着一个轻量级的故障转移控制器，监视宿主机namenode是否失效，并在namenode失效时进行故障切换。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;平稳故障转移(graceful failover):  故障转移器可以组织两个namenode有序地切换。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;规避(fencing): 以确保先前活动的namenode不会执行危害系统并导致系统崩溃的操作。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;24-命令行接口&quot;&gt;2.4 命令行接口&lt;/h4&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;fs.defaultFS, 设置为 hdfs://localhost/,用于设置hadoop的默认文件系统。HDFS的守护程序通过该属性来确定HDFS namenode的主机和端口。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;fs.replication, HDFS默认设置将文件系统的复本。设为1时，单独一个datanode上运行，HDFS将无法复制到3个datanode。设置为5时，如果节点只有3个，它还是只会复制为3份。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h5 id=&quot;241-文件系统的基本操作&quot;&gt;2.4.1 文件系统的基本操作&lt;/h5&gt;
-
-&lt;p&gt;上传文件&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bin/hadoop fs -put tmp.txt hdfs://hadoop1:9001/
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;下载文件&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bin/hadoop fs -get hdfs://hadoop1:9001/tmp.txt
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;从本地将一个文件复制到HDFS:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;默认域名在core-site.xml中的defaultFS指定
-bin/hadoop fs -copyFromLocal input/core-site.xml hdfs://hadoop1/user/root/core.xml
-
-省略, hdfs://hadoop1，因为该项在core-site.xml指定。
-bin/hadoop fs -copyFromLocal input/core-site.xml /user/root/core.xml
-
-相对路径(默认为/user/root)
-bin/hadoop fs -copyFromLocal input/core-site.xml core.xml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;将文件复制回本地，并查检是否一致&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-bin/hadoop fs -copyToLocal core.xml input/core-site.copy.xml
-
-md5sum input/core-site.copy.xml input/core-site.xml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;新建一个目录:&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;bin/hadoop fs -mkdir books
-默认在/user/root(用户)目录下
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;显示/user/root下的目录结构&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hadoop fs -ls .
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h4 id=&quot;242-hdfs权限&quot;&gt;2.4.2 HDFS权限&lt;/h4&gt;
-
-&lt;p&gt;启动权限 dfs.permissions.enabled属性&lt;/p&gt;
-
-&lt;p&gt;超级用户是namenode进程的标识。对于超级用户，系统不会执行任何检查。&lt;/p&gt;
-
-&lt;h3 id=&quot;3-数据流&quot;&gt;3 数据流&lt;/h3&gt;
-
-&lt;h4 id=&quot;31-文件读取java-api式&quot;&gt;3.1 文件读取（JAVA API式）&lt;/h4&gt;
-
-&lt;p&gt;HDFS、namenode、datanode之间的数据流交互:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/mhmdc20LkG.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;client通过&lt;code class=&quot;highlighter-rouge&quot;&gt;FileSystem&lt;/code&gt;对象(对于&lt;code class=&quot;highlighter-rouge&quot;&gt;hdfs&lt;/code&gt;， &lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;)的open()方法打开文件。&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem &lt;/code&gt;通过远程调用（RPC）来调用namenode，确定文件起始块的位置。对于每一个块, namenode返回该块副本的datanode地址。datanode根据与client的距离来排序。&lt;/li&gt;
-  &lt;li&gt;对&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;类返回的&lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataInputStream&lt;/code&gt;(文件定位输入流)类，调用&lt;code class=&quot;highlighter-rouge&quot;&gt;read()&lt;/code&gt;方法。根据namenode返回的该块datanode地址，链接最近的文件中第一个块所在的datanode。&lt;/li&gt;
-  &lt;li&gt;反复调用&lt;code class=&quot;highlighter-rouge&quot;&gt;read()&lt;/code&gt;方法，可以将数据从datanode传输到客户端&lt;/li&gt;
-  &lt;li&gt;到达块的末端时，&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSInputStream&lt;/code&gt;(&lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataInputStream&lt;/code&gt;类封装的对象)关闭与datanode的链接，然后寻找下一个块的最佳datanode。&lt;/li&gt;
-  &lt;li&gt;client客户端读取完成，FSDataInputStream调用close()方法&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;如果DFSInputStream在与datanode通迅时遇到错误，会尝试从这个块的另外一个邻近datanode读取数据。并记住故障的datanode, 保证后续不会反复读取该节点。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;strong&gt;客户端可以直接连接到datanode检索数据，且 namenode告知client每个块所在最佳的datanode。namenode只需响应位置的请求，而无需响应数据请求。&lt;/strong&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;32-网络拓扑与hadoop&quot;&gt;3.2 网络拓扑与Hadoop&lt;/h4&gt;
-
-&lt;p&gt;带宽依次递减：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;同一节点上的进程&lt;/li&gt;
-  &lt;li&gt;同一机架上的不同节点&lt;/li&gt;
-  &lt;li&gt;同一数据中心不同机架上的节点&lt;/li&gt;
-  &lt;li&gt;不同数据中心中的节点&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;例如, 假设有数据中心d1机架r1中的节点n1。该节点可以表示为/d1/r1/n1。上述四种距离描述:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;distance(/d1/r1/n1, d1/r1/n1)=0&lt;/li&gt;
-  &lt;li&gt;distance(/d1/r1/n1, d1/r1/d1)=2&lt;/li&gt;
-  &lt;li&gt;distance(/d1/r1/n1, d1/r1/d1)=4&lt;/li&gt;
-  &lt;li&gt;distance(/d1/r1/n1, d1/r1/d1)=6&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/1k5G7mkIcf.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;文件写入&quot;&gt;文件写入&lt;/h2&gt;
-&lt;p&gt;如果新建一个文件，把数据写入，最后关闭该文件。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/f994L79J3J.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;client通过对&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;对象调用&lt;code class=&quot;highlighter-rouge&quot;&gt;reate()&lt;/code&gt;来新建文件&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;对namenode创建一个RPC调用，在文件系统的命名空间中新建一个文件，此时文件还没有相应的数据块&lt;/li&gt;
-  &lt;li&gt;namenode执行各种不同的检查以确保这个文件不存在以及client新建该文件的权限。
-    &lt;ul&gt;
-      &lt;li&gt;如果检查通过，namenode就会创建新文件并记录；否则，文件创建失败并向client抛出IOException异常。&lt;/li&gt;
-      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DistributedFileSystem&lt;/code&gt;向客户端返回一个&lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataOutputStream&lt;/code&gt;对象&lt;/li&gt;
-      &lt;li&gt;由此 client 开始写入数据。&lt;/li&gt;
-      &lt;li&gt;类似读取事件， &lt;code class=&quot;highlighter-rouge&quot;&gt;FSDataOutputStream&lt;/code&gt;封装一个&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSoutPutStream&lt;/code&gt;对象，该对象负责 datanode 与 namenoe之间的通信。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;  在client写入时，&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSOutputStream&lt;/code&gt;将它分成一个个数据包，并写入内部队列，&lt;strong&gt;称为“数据队列” (data queue)&lt;/strong&gt;。&lt;code class=&quot;highlighter-rouge&quot;&gt;DataStreamer &lt;/code&gt;处理数据队列，它的责任是挑选出适合存储数据复本一组datanode，并据此来要求namenode分配新的数据块。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;这&lt;strong&gt;一组datanode构成一个管线&lt;/strong&gt;。
-    &lt;ul&gt;
-      &lt;li&gt;假设复本为3，所以管线中有3个节点。&lt;/li&gt;
-      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DataStreame&lt;/code&gt;将数据包流式传输到管线中第1个datanode，该datanode存储数据包并将它发送到第2个datanode，同样第2个datanode存储该数据包并将它发送到第3个datanode。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;DFSOutputStream&lt;/code&gt; 也维护着一个内部数据包队列来等待datanode的收到确定回执，&lt;strong&gt;称为“确认队列”(ack queue)&lt;/strong&gt;。收到管道中所有的datanode确认信息后，该数据包才会被确认队列删除。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;如果任何datanode在数据写入期间发生故障，则执行以下操作（对写入数据client透明）。&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;首先关闭管线，确认把队列中的所有数据包都添加回数据队列的最前端，以确保故障节点下游的datanode不会漏掉任何一个数据包。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;为存储在另一正常datanode的当前数据块指定一个新的标识，并将该标识传送给namenode，以便故障datanode在恢复后可以删除存储部分数据块。&lt;/li&gt;
-  &lt;li&gt;从管线中删除故障datanode, 基于两个正常datanode构建一条新管线。余下数据写入管线中正常datanode。namenode注意到复本不足时，会在另一个节点上创建一个新的复本。&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;同时不排除多个datanode同时发生故障的可能性。&lt;strong&gt;只要写入了dfs.namenode.replication.min的复本(默认为1)，写操作就会成功&lt;/strong&gt;，并这个块可以在集群中异步复制，直到其达到复本数(dfs.replication的默认值 为3)。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;client完成数据的写入后，对数据流调用close()方法。&lt;/li&gt;
-  &lt;li&gt;该操作将剩余的所有数据写入datanode管线， 并联系namenode告知其文件写入完成之前，等待确认。namenode已经知道文件由哪些块组成(因为DataStreamer请求分配数据块)，所以它在返回成功之前只需等待数据块进行最小量的复制。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;复本存放问题&quot;&gt;复本存放问题&lt;/h4&gt;
-&lt;p&gt;namenode 如何选择在哪个 datanode &lt;strong&gt;存放复本&lt;/strong&gt;：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;在运行客户端的节点上放第 1 个复本（如果客户端在集群外，就随机选择一个节点，系统会负载均衡）&lt;/li&gt;
-  &lt;li&gt;第2 个复本放在与第一个不同且随机另外选择的机架中节点上（离架）&lt;/li&gt;
-  &lt;li&gt;第 3 个复本放在与第2个复本同一个机架上， 且随机选择加一个节点。&lt;/li&gt;
-  &lt;li&gt;其他复本放在集群中随机节点上， 系统会尽量避免在同一个机架上放太多复本。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;一旦选定复本的放置位置，就根据网络拓扑结构创建一根管线。假设复本数为3。&lt;/p&gt;
-
-&lt;p&gt;​                                               &lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/8A0c3G00EC.png&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;参考:&lt;/strong&gt;&lt;/p&gt;
-
-&lt;Hadoop权威指南第四版&gt;
-&lt;/Hadoop权威指南第四版&gt;
-</description>
-        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/hadoop/2018/12/Hadoop-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.html</link>
-        <guid isPermaLink="true">http://localhost:4000/hadoop/2018/12/Hadoop-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86.html</guid>
-        
-        <category>Hadoop</category>
-        
-        
-        <category>Hadoop</category>
-        
-      </item>
-    
-      <item>
-        <title>[HDFS]高可用</title>
-        <description>&lt;blockquote&gt;
-  &lt;p&gt;它需要zookeeper的调度，首先配置zookeeper&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h4 id=&quot;hdfs-ha热备不需要secondarynamenode&quot;&gt;HDFS HA（热备、不需要secondarynamenode）&lt;/h4&gt;
-&lt;ul&gt;
-  &lt;li&gt;namenode active 主要的，活动的&lt;/li&gt;
-  &lt;li&gt;namenode standby(backup) 备用状态&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;问题起因&quot;&gt;问题起因：&lt;/h4&gt;
-&lt;ol&gt;
-  &lt;li&gt;namenode宕机，这段时间所有元数据丢失，hdfs无法提供服务。
-    &lt;ul&gt;
-      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SPOF（single point of failure）&lt;/code&gt;单点故障即会整体故障。&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;namenode节点，有一些服务需要升级，也需要停止服务才能升级&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;解决方法&quot;&gt;解决方法&lt;/h4&gt;
-&lt;ol&gt;
-  &lt;li&gt;操作日志信息给到journalnode管理（确保两个namenode都能同步更新edits）&lt;/li&gt;
-  &lt;li&gt;配置两个namenode&lt;/li&gt;
-  &lt;li&gt;客户端的访问实际地址，会自动分配到active的namenode&lt;/li&gt;
-  &lt;li&gt;两个namenode要隔离，同一时刻只有一个namenode对外提供服务&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;配置信息&quot;&gt;配置信息&lt;/h4&gt;
-
-&lt;h5 id=&quot;etchadoophdfs-sitexml&quot;&gt;etc/hadoop/hdfs-site.xml&lt;/h5&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;property&amp;gt;
-	# 对整个文件系统需要一个统称
-	&amp;lt;name&amp;gt;dfs.nameservices&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;ns1&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-	# 指明这个文件系统的namenode有哪些
-	&amp;lt;name&amp;gt;dfs.ha.namenodes.ns1&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;nn1,nn2&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-	# 指明nn1是哪个
-	&amp;lt;name&amp;gt;dfs.namenode.rpc-address.ns1.nn1&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;hadoop1:8020&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-	# 指明nn2是那个
-	&amp;lt;name&amp;gt;dfs.namenode.rpc-address.ns1.nn2&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;hadoop2:8020&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-	# 指明nn1访问地址端口
-	&amp;lt;name&amp;gt;dfs.namenode.http-address.ns1.nn1&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;hadoop1:50070&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&amp;lt;property&amp;gt;
-	# 指明nn2访问地址端口
-	&amp;lt;name&amp;gt;dfs.namenode.http-address.ns1.nn2&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;hadoop2:50070&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-	# 共享日志在journalnode上的共享端口
-	&amp;lt;name&amp;gt;dfs.namenode.shared.edits.dir&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;qjournal://hadoop1:8485;hadoop2:8485;hadoop3:8485/ns1&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-# 配置edits在journalnode上的保存地址
-&amp;lt;property&amp;gt;
-	&amp;lt;name&amp;gt;dfs.journalnode.edits.dir&amp;lt;/name&amp;gt;
-	# 注意这里的版本信息
-	&amp;lt;value&amp;gt;/opt/programs/hadoop-2.7.7/data/dfs/jn&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-	# 配置proxy代理客户端
-	&amp;lt;name&amp;gt;dfs.client.failover.proxy.provider.ns1&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h5 id=&quot;etchadoopcore-sitexml&quot;&gt;etc/hadoop/core-site.xml&lt;/h5&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# 配置两个namenode的隔离策略
-# sshfence方式
-# 使用这种方式，必须实现ssh无密码登陆
-
-&amp;lt;property&amp;gt;
-	&amp;lt;name&amp;gt;dfs.ha.fencing.methods&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;sshfence&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-	&amp;lt;name&amp;gt;dfs.ha.fencing.ssh.private-key-files&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;/root/.ssh/id_rsa&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&amp;lt;property&amp;gt;
-    &amp;lt;name&amp;gt;fs.defaultFS&amp;lt;/name&amp;gt;
-    &amp;lt;value&amp;gt;hdfs://ns1&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h5 id=&quot;最小化安装centos版本需要在每一个节点都手动安装fence组件psmisc&quot;&gt;最小化安装CentOS版本，需要在每一个节点都手动安装fence组件psmisc&lt;/h5&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum -y install psmisc  
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;psmisc包含fuser，killall，pstree三个程序，且出现上述问题是由于我们在安装centos7的时候选择了最小化安装，默认是不安装psmics。&lt;br /&gt;
-fuser 显示使用指定文件或者文件系统的进程的PID。&lt;br /&gt;
-killall 杀死某个名字的进程，它向运行指定命令的所有进程发出信号。&lt;br /&gt;
-pstree 树型显示当前运行的进程。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h4 id=&quot;启动集群&quot;&gt;启动集群：&lt;/h4&gt;
-
-&lt;p&gt;关闭所有守护进程，清除之前残留的data/tmp/*信息&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1.启动所有的journalnode
-    sbin/hadoop-daemon.sh start journalnode
-2.nn1格式化并启动
-    bin/hdfs namenode -format
-    sbin/hadoop-daemon.sh start namenode
-3.在nn2上，同步nn1的元数据信息
-    bin/hdfs namenode -bootstrapStandby
-4.启动nn2
-    sbin/hadoop-daemon.sh start namenode
-5.启动datanode节点
-    sbin/hadoop-daemon.sh start datanode
-6.把节点设置为active
-    bin/hdfs haadmin -transitionToActive nn1
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;自动故障转移借助于zookeeper&quot;&gt;自动故障转移，借助于zookeeper&lt;/h3&gt;
-&lt;ol&gt;
-  &lt;li&gt;启动时都是standby，选举一个为active&lt;/li&gt;
-  &lt;li&gt;监控 ZKFC, 给每一个namenode都增加一个ZKFC服务。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h4 id=&quot;配置&quot;&gt;配置&lt;/h4&gt;
-
-&lt;p&gt;hdfs-site.xml:增加。 打开自动故障转移&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;property&amp;gt;
-	&amp;lt;name&amp;gt;dfs.ha.automatic-failover.enabled&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;true&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;core-site.xml: 添加zookeeper的服务&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;property&amp;gt;
-	&amp;lt;name&amp;gt;ha.zookeeper.quorum&amp;lt;/name&amp;gt;
-	&amp;lt;value&amp;gt;hadoop1:2181,hadoop2:2181,hadoop3:2181&amp;lt;/value&amp;gt;
-&amp;lt;/property&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h4 id=&quot;启动&quot;&gt;启动&lt;/h4&gt;
-&lt;ol&gt;
-  &lt;li&gt;关闭所有hdfs服务，scp同步修改的文件&lt;/li&gt;
-  &lt;li&gt;启动zookeeper脚本，每个节点都启动. &lt;code class=&quot;highlighter-rouge&quot;&gt;bin/zkServer start&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;启动zookeeper集群， &lt;code class=&quot;highlighter-rouge&quot;&gt;sbin/hadoop-daemon.sh start journalnode&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;初始化HA在zookeeper中的状态&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;bin/hdfs zkfc -formatZK -force&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;启动hdfs服务。如果直接一起启动出现通信错误，造成namenode停止，则&lt;strong&gt;需要先启动journalnode，再启动其他&lt;/strong&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;namenode节点启动zkfc服务。先在哪台节点启动zkfc，那么哪台就是active&lt;/p&gt;
-
-    &lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;sbin/hadoop-daemon.sh start zkfc&lt;/code&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-</description>
-        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html</link>
-        <guid isPermaLink="true">http://localhost:4000/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html</guid>
-        
-        <category>HDFS</category>
-        
-        
-        <category>HDFS</category>
-        
-      </item>
-    
-      <item>
-        <title>[HDFS]上传和下载</title>
-        <description>&lt;h3 id=&quot;客户端上传数据&quot;&gt;客户端上传数据:&lt;/h3&gt;
-
-&lt;p&gt;​            &lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/20171224173355764.jpg&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;客户端与NameNode通迅&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;客户端上传一个文件，namenode请求上传文件。&lt;/li&gt;
-  &lt;li&gt;namenode响应并获取文件名，从元数据中查找/hadoop/hdfs/中是否已经存在相同文件名的文件，如果不存在则允许上传&lt;/li&gt;
-  &lt;li&gt;客户端根据配置（dfs.blocksize - 块大少、hadoop 2.x 默认为128M）将文件切成N个block。&lt;/li&gt;
-  &lt;li&gt;客户端向nameNode发出RPC请求上传第一个block，nameNode返回dataNode列表（dfs.replication - 副本个数、默认为3，需要多少个副本则返回多少个dataNode，选择dataNode主要考虑空间与距离）。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;&lt;strong&gt;客户端与DataNode通迅&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;Client与DataNodeA建立通道，上传第一个Block&lt;/li&gt;
-  &lt;li&gt;请求建立block传输通道channel
-    &lt;ul&gt;
-      &lt;li&gt;
-        &lt;p&gt;DataNodeA向DataNodeB建立通道 , 通过PIPE LINE将数据传输至dataNodeB。&lt;/p&gt;
-      &lt;/li&gt;
-      &lt;li&gt;
-        &lt;p&gt;DataNodeB与dataNodeC建立通道，通过PIPE LINE将数据传输至dataNodeC。&lt;/p&gt;
-      &lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;客户端与dataNodeA传输完毕，dataNodeA则返回一个成功答应。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h5 id=&quot;most-import&quot;&gt;MOST IMPORT&lt;/h5&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;数据传输是以packet为单位进行传输，大小默认为64K。&lt;/li&gt;
-  &lt;li&gt;packet以chunk为单位进行校验，大小默认为512Byte。&lt;/li&gt;
-  &lt;li&gt;只要有一个副本上传成功即可，其余失败的副本，之后nameNode会做异步的同步。&lt;/li&gt;
-  &lt;li&gt;每传一个block，都需要向nameNode发出请求, 再分配客户端复本个数的datanode。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h3 id=&quot;客户端读数据&quot;&gt;客户端读数据:&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/Hdfs%E8%AF%BB%E6%96%87%E4%BB%B6%E6%B5%81%E7%A8%8B.jpg&quot; alt=&quot;mark&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;读文件流程：&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;应用程序通过HDFS客户端向NameNode发生远程调用请求。&lt;/li&gt;
-  &lt;li&gt;NameNode收到请求之后，返回文件的块列表信息。块列表信息中包含每个block拷贝的datanode地址。&lt;/li&gt;
-  &lt;li&gt;HDFS 客户端会选择离自己最近的那个拷贝所在的datanode来读取数据。&lt;/li&gt;
-  &lt;li&gt;数据读取完成以后，HDFS客户端关闭与当前的datanode的链接。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;参考：&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://blog.csdn.net/qq_26369213/article/details/78886055&quot;&gt;HDFS客户端上传文件流程博客&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a href=&quot;http://www.voidcn.com/article/p-vylwijve-brm.html&quot;&gt;HDFS读写文件流程&lt;/a&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sun, 16 Dec 2018 00:00:00 +0800</pubDate>
-        <link>http://localhost:4000/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html</link>
-        <guid isPermaLink="true">http://localhost:4000/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html</guid>
-        
-        <category>HDFS</category>
-        
-        
-        <category>HDFS</category>
         
       </item>
     

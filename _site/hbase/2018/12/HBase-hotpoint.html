@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[HDFS]上传和下载 - xlin的个人博客</title>
+    <title>[HBase]知识点 - xlin的个人博客</title>
     <meta name="author"  content="xlin">
-    <meta name="description" content="[HDFS]上传和下载">
-    <meta name="keywords"  content="HDFS">
+    <meta name="description" content="[HBase]知识点">
+    <meta name="keywords"  content="HBase">
     <!-- Open Graph -->
-    <meta property="og:title" content="[HDFS]上传和下载 - xlin的个人博客">
+    <meta property="og:title" content="[HBase]知识点 - xlin的个人博客">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="http://localhost:4000/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html">
+    <meta property="og:url" content="http://localhost:4000/hbase/2018/12/HBase-hotpoint.html">
     <meta property="og:description" content="记录编程的学习笔记">
     <meta property="og:site_name" content="xlin的个人博客">
     <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
@@ -110,11 +110,11 @@ Author: Ray-Eldath
       <div class="post-tags">
         
           
-            <a href="http://localhost:4000/tags#HDFS" class="post-tag">HDFS</a>
+            <a href="http://localhost:4000/tags#HBase" class="post-tag">HBase</a>
           
         
       </div>
-      <h1>[HDFS]上传和下载</h1>
+      <h1>[HBase]知识点</h1>
       <div class="post-meta">
         <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
         <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
@@ -122,73 +122,66 @@ Author: Ray-Eldath
     </div>
     
     <div class="filter"></div>
-      <div class="post-cover" style="background: url('../../../assets/img/hadoop-logo.jpg') center no-repeat; background-size: cover;"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hbase_logo_with_orca_large.png') center no-repeat; background-size: cover;"></div>
     
   </header>
 
   <div class="post-content visible">
     
-    <h2 class="post-subtitle">HDFS上传和下载简述流程</h2>
+    <h2 class="post-subtitle">HBase基础问答题</h2>
     
 
     <article class="markdown-body">
-      <h3 id="客户端上传数据">客户端上传数据:</h3>
+      <h4 id="1-hbasemeta放在哪里以什么形式存在">1. hbase:meta放在哪里，以什么形式存在？</h4>
 
-<p>​            <img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/20171224173355764.jpg" alt="mark" /></p>
+<blockquote>
+  <p>hbase:meta 以表的形式存放在hbase中的regionserver 上。<br />
+hbase:meta 保存所有的regions列表。 zookeeper中保存所有的位置信息。</p>
+</blockquote>
 
-<p><strong>客户端与NameNode通迅</strong></p>
+<h4 id="2-client-读写细节">2. client 读写细节</h4>
+<blockquote>
+  <p>client 通过查找 hbase:meta 表，找到指定提供服务的regionservers。并且获取hbase:meta的元数据。在定位所需的regions后，client联系 指定区域的regionservers为regions提供服务，而不是通过hmaster，然后开始执行读写。</p>
 
+  <p>hbase:meta 被缓存在内存中。假如该region分裂或者regionserver宕了，client 重新查询meta表，以确定用户区域新位置。</p>
+</blockquote>
+
+<h4 id="3-client无论读写都要找zookeeper为什么">3. client无论读写都要找zookeeper为什么？</h4>
+<ul>
+  <li>zookeeper上的ZNode，有一个叫meta-region-server，保存的就是meta表在哪个regionserver</li>
+  <li>meta表记录了我们要找的具体table在哪个regionserver</li>
+</ul>
+
+<h4 id="4-masterb也要去找zookeeper为什么">4. masterb也要去找zookeeper为什么？</h4>
+<blockquote>
+  <p>master需要知道regionserver在台主机上，zookeeper保存了当前的regionserver</p>
+</blockquote>
+
+<h4 id="5-hbase数据存储">5. hbase数据存储</h4>
 <ol>
-  <li>客户端上传一个文件，namenode请求上传文件。</li>
-  <li>namenode响应并获取文件名，从元数据中查找/hadoop/hdfs/中是否已经存在相同文件名的文件，如果不存在则允许上传</li>
-  <li>客户端根据配置（dfs.blocksize - 块大少、hadoop 2.x 默认为128M）将文件切成N个block。</li>
-  <li>客户端向nameNode发出RPC请求上传第一个block，nameNode返回dataNode列表（dfs.replication - 副本个数、默认为3，需要多少个副本则返回多少个dataNode，选择dataNode主要考虑空间与距离）。</li>
+  <li>所有的数据都是存储在hdfs上，主要包括hfile, storefile</li>
+  <li>Hfile: Hbase中keyvalue数据的存储格式，HFile是hadoop二进制格式文件。</li>
+  <li>StoreFile: 对HFile做轻量级封装。 可以说是StoreFile就是HFile</li>
+  <li>HLogFile，HBase中WAL的存储，物理上的squence file</li>
 </ol>
 
-<p><strong>客户端与DataNode通迅</strong></p>
+<h4 id="memstore和storefile">memstore和storefile</h4>
+<ul>
+  <li>client写入时，会先定入memstore, memstore写满时就会flush成一个storefile</li>
+  <li>storefile的数量增长到一定阈值时，会触发compact合并操作，合并成一个storefile，此时会有版本合并和数据删除（此时才是真正的删除，原先删除操作只是打标签）</li>
+  <li>当storefile 容量增长到一定阈值，会触发spilt操作，将当前region分成2个region, 此时region会下线，新生成的hmaster会被hmaster分配到对应region server上。</li>
+</ul>
 
-<ol>
-  <li>Client与DataNodeA建立通道，上传第一个Block</li>
-  <li>请求建立block传输通道channel
-    <ul>
-      <li>
-        <p>DataNodeA向DataNodeB建立通道 , 通过PIPE LINE将数据传输至dataNodeB。</p>
-      </li>
-      <li>
-        <p>DataNodeB与dataNodeC建立通道，通过PIPE LINE将数据传输至dataNodeC。</p>
-      </li>
-    </ul>
-  </li>
-  <li>客户端与dataNodeA传输完毕，dataNodeA则返回一个成功答应。</li>
-</ol>
+<p><strong>HBase只是增加数据，更新和删除操作都是在compact阶段做，所以，用户写操作只需要进入内存即可立即返回，保证了IO高性能</strong></p>
 
-<h5 id="most-import">MOST IMPORT</h5>
+<h4 id="hlog文件结构">HLog文件结构</h4>
+<p>WAL，日志预处理，用于灾难恢复。老版本中每个regionserver维护一个Hlog，而不是每个region</p>
+<ul>
+  <li>不同的region日志会混在一起，这样做的目的是不断追加单个文件相对于写多个文件来说，可以减少磁盘寻址次数，可以提高table的写性能。</li>
+  <li>缺点是，如果一台regionserver下线，为了恢复其上的region，需要将该regionserver上的log进行拆分，分发到其他的regionserver进行恢复。</li>
+</ul>
 
-<ol>
-  <li>数据传输是以packet为单位进行传输，大小默认为64K。</li>
-  <li>packet以chunk为单位进行校验，大小默认为512Byte。</li>
-  <li>只要有一个副本上传成功即可，其余失败的副本，之后nameNode会做异步的同步。</li>
-  <li>每传一个block，都需要向nameNode发出请求, 再分配客户端复本个数的datanode。</li>
-</ol>
-
-<h3 id="客户端读数据">客户端读数据:</h3>
-
-<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/Hdfs%E8%AF%BB%E6%96%87%E4%BB%B6%E6%B5%81%E7%A8%8B.jpg" alt="mark" /></p>
-
-<p>读文件流程：</p>
-
-<ol>
-  <li>应用程序通过HDFS客户端向NameNode发生远程调用请求。</li>
-  <li>NameNode收到请求之后，返回文件的块列表信息。块列表信息中包含每个block拷贝的datanode地址。</li>
-  <li>HDFS 客户端会选择离自己最近的那个拷贝所在的datanode来读取数据。</li>
-  <li>数据读取完成以后，HDFS客户端关闭与当前的datanode的链接。</li>
-</ol>
-
-<p>参考：</p>
-
-<p><a href="https://blog.csdn.net/qq_26369213/article/details/78886055">HDFS客户端上传文件流程博客</a></p>
-
-<p><a href="http://www.voidcn.com/article/p-vylwijve-brm.html">HDFS读写文件流程</a></p>
+<p>新版本可以设置每个region维护一个log, 优缺点反之 。</p>
 
     </article>
 
@@ -228,10 +221,10 @@ Author: Ray-Eldath
     <section class="post-footer-item read-next">
       
       <div class="read-next-item">
-        <a href="/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html" class="read-next-link"></a>
+        <a href="/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html" class="read-next-link"></a>
         <section>
-          <span>[HDFS]高可用</span>
-          <p>  它需要zookeeper的调度，首先配置zookeeper</p>
+          <span>[HDFS]上传和下载</span>
+          <p>客户端上传数据:</p>
         </section>
         
         <div class="filter"></div>
@@ -242,10 +235,10 @@ Author: Ray-Eldath
 
       
       <div class="read-next-item">
-        <a href="/hbase/2018/12/HBase-hotpoint.html" class="read-next-link"></a>
+        <a href="/hbase/2018/12/HBase.html" class="read-next-link"></a>
           <section>
-            <span>[HBase]知识点</span>
-            <p>1. hbase:meta放在哪里，以什么形式存在？</p>
+            <span>[HBase]介绍</span>
+            <p>HBase 在hadoop生态圈中</p>
           </section>
           
           <div class="filter"></div>

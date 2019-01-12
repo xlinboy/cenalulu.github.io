@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Zookeeper]介绍 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[Zookeeper]介绍">
+    <meta name="keywords"  content="Zookeeper">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[Zookeeper]介绍 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/zookeeper/2018/12/zookeeper-%E4%BB%8B%E7%BB%8D.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#Zookeeper" class="post-tag">Zookeeper</a>
+          
+        
+      </div>
+      <h1>[Zookeeper]介绍</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hbase_logo_with_orca_large.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">Zookeeper工作机制及选举机制</h2>
+    
+
+    <article class="markdown-body">
+      <h3 id="zookeeper-概念简介">Zookeeper 概念简介</h3>
+
+<p>Zookeeper是一个分布式协调服务；就是为用户的分布式应用程序提供协调服务。</p>
+<ol>
+  <li>为分布式程序提供服务</li>
+  <li>本身是一个分布式程序，只要半数以上存活,zk正常提供服务</li>
+  <li>zookeeper 涵盖：主从协调、统一名称服务…</li>
+  <li>zookeeper 底层只提供两个功能：
+    <ul>
+      <li>管理（存储，读取）用户程序提交的数据</li>
+      <li>并为用户程序提供数据节点监听服务</li>
+    </ul>
+  </li>
+</ol>
+
+<p>Zookeeper默认只有leader和follower，没有observer。</p>
+
+<p>集群通过选举过程来选举来选定leader的机器， leader服务器为客户端提供读和写服务。</p>
+
+<p>Follower和Observer都能提供服务，不能提供写服务。Observer不参与Leader选举，也不参与写操作（过半写成功）策略。</p>
+
+<h3 id="zookeeper工作机制">zookeeper工作机制</h3>
+
+<ul>
+  <li>基于观察者模式设计的分布式服务管理框架。</li>
+  <li>存储和管理大家都关心的数据（可自定义），然后接受观察者注册</li>
+  <li>一旦这些数据状态发生变化，zookeeper就将负责通知已经在zookeeper上注册的那些观察者(observer)做出相应的反应</li>
+</ul>
+
+<p><strong>zookeeper = 文件系统 + 通知机制</strong></p>
+
+<h3 id="zookeeper-结构和特性">zookeeper 结构和特性</h3>
+
+<h4 id="zookeeper-特性">zookeeper 特性</h4>
+
+<ol>
+  <li>主从，一个leader, 多个follower组成的集群</li>
+  <li>全局数据一致：每个server保存一份相同的数据副本，client无论连接到哪个server，数据都是一致的</li>
+  <li>leader：分布式读写，更新请求转发</li>
+  <li>同一个client请求，FIFO</li>
+  <li>数据更新原子性。一次数据要么成功，要么失败。</li>
+  <li>实时性，一定时间范围内,client能读最新数据。</li>
+</ol>
+
+<h4 id="zookeeper-数据结构">zookeeper 数据结构</h4>
+
+<ol>
+  <li>树型结构</li>
+  <li>每个节点在zookeeper中叫Zonde，并且有唯一标识</li>
+  <li>每个Zonde默认能够存储1MB数据，包含数据和子节点</li>
+  <li>客户端应用可以在节点上设置监听器</li>
+</ol>
+
+<h3 id="节点类型">节点类型</h3>
+
+<ol>
+  <li>Zonde有两种类型
+    <ul>
+      <li>短暂 ephemeral, 断开链接即删除</li>
+      <li>持久 persistent, 断开链接不删除</li>
+    </ul>
+  </li>
+  <li>Zonde有四种形式的目录节点（默认是persistent）
+    <ul>
+      <li>PERSISTENT</li>
+      <li>PERSISTENT_SEQUENTIAL（持久序列/test0000000019 ）</li>
+      <li>EPHEMERAL</li>
+      <li>EPHEMERAL_SEQUENTIAL</li>
+    </ul>
+  </li>
+  <li>创建znode时设置顺序标识，znode名称后会附加一个值，顺序号是一个单调递增的计数器，由父节点维护</li>
+  <li>分布式系统中，顺序号可以被用于所有的事件，进行全局排序，这样客户端可以通过顺序号推断事件的顺序。</li>
+</ol>
+
+<h3 id="状态信息">状态信息</h3>
+<p>每个ZNode除了存储数据内容之外，还存储了ZNode本身的一些状态信息。用 get 命令可以同时获得某个ZNode的内容和状态信息。如下：</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cZxid = 0xb00000002	事务id
+ctime = Thu Nov 01 02:32:12 CST 2018	创建时间
+mZxid = 0xb0000000e	最后更新的事物id
+mtime = Thu Nov 01 02:39:36 CST 2018	最后修改的时间
+pZxid = 0xb0000000f	最后更新的子节点事务id
+cversion = 1	子节点修改次数
+dataVersion = 1	数据变化号
+aclVersion = 0	访问控制列表的变化号
+ephemeralOwner = 0x0	临时节点的拥有者sessionid，若非临时节点，则为0
+dataLength = 5	数据长度
+numChildren = 1	子节点数量
+</code></pre></div></div>
+<h3 id="watcher">Watcher</h3>
+<blockquote>
+  <p>Watcher（事件监听器），是ZooKeeper中一个很重要的特性。ZooKeeper允许用户在指定节点上注册一些Watcher，并且在一些特定事件触发的时候，ZooKeeper服务端会将事件通知到感兴趣的客户端上去。该机制是ZooKeeper实现分布式协调服务的重要特性。</p>
+</blockquote>
+
+<h4 id="监听器原理-">监听器原理： *</h4>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/kDb2J2mA4i.png" alt="mark" /></p>
+
+<ol>
+  <li>main()方法，启动client</li>
+  <li>在main线程中，创建client,这时会创建两个线程，一个负责网络连接通信(connect), 一个负责监听(listener)。</li>
+  <li>通过connect线程将注册的监听时间发送给zookeeper</li>
+  <li>在zookeeper的注册监听器列表中将注册的监听时间添加到列表</li>
+  <li>zookeeper监听到有数据或路径变化，就会将消息发送给listener线程</li>
+  <li>listener线程内部调用process()方法。</li>
+</ol>
+
+<h3 id="写数据流程">写数据流程</h3>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/3KdEaimBf6.png" alt="mark" /></p>
+
+<ol>
+  <li>client 连接到集群中的某一个节点</li>
+  <li>client 向server1发送写请求</li>
+  <li>
+    <p>若server1 不是leader，server转发给leader</p>
+
+    <blockquote>
+      <p>leader会将写请求广播给各个server，leader会认识数据写成功了，并通知给server1</p>
+    </blockquote>
+  </li>
+  <li>若半数以上的server都写成功了，leader会认为写操作成功，并通知server1</li>
+  <li>server1通知client，数据写成功了。</li>
+</ol>
+
+<h3 id="zookeeper-的选举机制">zookeeper 的选举机制</h3>
+
+<ol>
+  <li>半数机制： 投票数达半数以上为leader</li>
+  <li>自私制 + 大数制</li>
+</ol>
+
+<p><strong>假设有5台机器</strong></p>
+
+<ol>
+  <li>node1先启动，投票给自己，5台机器只有1票，作废</li>
+  <li>node2启动，node1投票给自己没有用，投票给node2，node2也投给自己，node2有两票</li>
+  <li>node3启动，node1投给myid最大的节点，node3，node2也投node3，node3也投自己，node3有3票，node3为leader</li>
+  <li>node4启动， node5启动</li>
+</ol>
+
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+
+      
+      <div class="read-next-item">
+        <a href="/yarn/2018/12/yarn.html" class="read-next-link"></a>
+          <section>
+            <span>[Yarn]介绍</span>
+            <p>yarn基本思想</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

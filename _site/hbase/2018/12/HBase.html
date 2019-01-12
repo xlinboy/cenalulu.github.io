@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[HBase]介绍 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[HBase]介绍">
+    <meta name="keywords"  content="HBase">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[HBase]介绍 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/hbase/2018/12/HBase.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#HBase" class="post-tag">HBase</a>
+          
+        
+      </div>
+      <h1>[HBase]介绍</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hbase_logo_with_orca_large.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">HBase的各大组件</h2>
+    
+
+    <article class="markdown-body">
+      <h1 id="hbase-在hadoop生态圈中">HBase 在hadoop生态圈中</h1>
+
+<blockquote>
+  <p><strong>HBase是什么，可以被用在哪里，解决什么样的问题？</strong></p>
+
+  <p>Hbase是一种类似数据库的存储层，HBase适用于结构化的存储，并且是一个列式的分布式数据库，由当年的BigTable的论文而生。</p>
+</blockquote>
+
+<h5 id="数据在hbase中的排布逻辑上">数据在HBase中的排布逻辑上</h5>
+
+<table>
+  <thead>
+    <tr>
+      <th>Row-key</th>
+      <th>value(CF, Qualifiter, Version)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>00001</td>
+      <td>info{‘姓’: ‘张’，’名’:’三’}<br />pwd{‘密码’: ‘111’}</td>
+    </tr>
+    <tr>
+      <td>00002</td>
+      <td>Info{‘姓’: ‘李’，’名’:’四’}<br />pwd{‘密码’: ‘222’}</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>数据模型</p>
+<ul>
+  <li>Row-key：主键。</li>
+  <li>Column Family： 列簇, info。是Region的一个物理存储单元。同一个Region下面的多个ColumnFamily，位于不同的路径下面。</li>
+  <li>Column：属于某一个CF， familyName:column, 姓: 张。</li>
+  <li>Cell：由{row key, cloumnFamily, version} 唯一确定的单元。（cell中的数据没有类型，全是字节码）</li>
+  <li>Time Stamp：cell都保存着一份数据的多个版本，版本通过时间戳索引。每个cell中，不同的版本的数据按时间倒序排序，保证最新的数据在前面。</li>
+</ul>
+
+<h5 id="数据在hbase上的排布">数据在HBase上的排布</h5>
+
+<table>
+  <thead>
+    <tr>
+      <th>Row-Key</th>
+      <th>CF:Colum-Key</th>
+      <th>时间戳</th>
+      <th>Cell Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>00001</td>
+      <td>info:fn</td>
+      <td>123456789</td>
+      <td>三</td>
+    </tr>
+    <tr>
+      <td>00001</td>
+      <td>info:fn</td>
+      <td>123456789</td>
+      <td>张</td>
+    </tr>
+    <tr>
+      <td>00002</td>
+      <td>info:fn</td>
+      <td>123456789</td>
+      <td>四</td>
+    </tr>
+    <tr>
+      <td>00002</td>
+      <td>info:fn</td>
+      <td>123456789</td>
+      <td>李</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在 Hbase 中，Row-key 加上 CF 加上 Qulifier 再加上一个时间戳才可以定位到一个单元格数据（Hbase 中每个单元格默认有 3 个时间戳的版本数据）。</p>
+
+<h1 id="hbase的表特征">Hbase的表特征</h1>
+
+<h3 id="hbase相关模块">HBase相关模块</h3>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/image002.png" alt="image" /></p>
+
+<h3 id="master">Master</h3>
+<p>HMaster运行在namenode节点上</p>
+<blockquote>
+  <p>Hbase Master 协调多个Region Server，并监测他们之间的状态。 HMaster分配还负责分配Region 给 Region Server。</p>
+</blockquote>
+
+<p>HMaster职责 *</p>
+<ul>
+  <li>管理用户对table的增、删、改、查操作</li>
+  <li>记录region在哪个region server上</li>
+  <li>在Region Split后，负责新的Region的分配</li>
+  <li>管理HRegion Server的负载均衡，调整Region分布</li>
+  <li>HRegion Server宕机后， 负责失效HRegion Server上的Regions迁移</li>
+</ul>
+
+<p>Master宕机，不影响RegionServer正在持行的工作。所以不存在单点故障（SPOF）。类似傀儡皇帝。</p>
+
+<p><strong>HMaster是所有metadata更改的接口。</strong></p>
+
+<h3 id="region-server">Region Server</h3>
+<p>HRegionServer运行在datanode节点上</p>
+<blockquote>
+  <p>一个Region Server包含多个Region。Region Server的作用就只是管理表格，以及实现读写操作。</p>
+
+  <p>Client 连接 Region Server， 并通信获取HBase中的数据</p>
+
+</blockquote>
+
+<ul>
+  <li>HRegion Server主要负责响应用户I/O请求，向HDFS文件系统中读写数据。</li>
+</ul>
+
+<h3 id="client">client</h3>
+<p>HBASE Client使用HBASE的RPC机制与HMaster和RegionServer进行通信。</p>
+
+<ul>
+  <li>管理类操作：Client与HMaster进行RPC</li>
+  <li>Client 与HRegionServer进行RPC</li>
+</ul>
+
+<h3 id="zookeeper">Zookeeper</h3>
+
+<blockquote>
+  <p>负责Region 和 Region Server的注册。 实现HMaster的HA</p>
+</blockquote>
+
+<p>Hbase强依赖ZK</p>
+<ul>
+  <li>默认情况下， HBase管理ZK实例，如启动/停止ZK。实际上，一般是使用我们自己安装管理的ZK</li>
+  <li>hmaster与hregionserver启动时会向zk注册</li>
+  <li>zk引入例HMaster不再单点故障</li>
+</ul>
+
+<h3 id="region">Region</h3>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/Region.png" style="height:250px;" /></p>
+
+<blockquote>
+  <p>Region 是真实存放数据的地方。如果表非常大，并由多个CF组成，那么表的数据将放在多年Region之间， 每个Region中会关联多个存储单元。</p>
+</blockquote>
+
+<ul>
+  <li>Region将数据表按Key横向划分为一个个子表，实现分布式存储</li>
+  <li><strong>Region是HBase分布式最基本单元</strong></li>
+  <li>Region分为元数据Region以及用户Region两类</li>
+  <li>Meta Region记录了每一个User Region的路由信息</li>
+  <li>读写Region数据的路由，包括如下几步：
+    <ul>
+      <li>寻找Meta Region地址。</li>
+      <li>再由Meta Region寻找User Region地址</li>
+    </ul>
+  </li>
+</ul>
+
+<h4 id="cloumn-family">Cloumn Family</h4>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/%E5%88%97%E6%97%8F.png" alt="image" /></p>
+
+<h2 id="hbase的工作机制">Hbase的工作机制</h2>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/image003.png" style="height:300px" /></p>
+
+<ol>
+  <li>client 访问HBase集群时，首先需要和zookeeper通信，找到对应的Region Server。</li>
+  <li>Region是HBase的并行单元，数据都存在Region中。</li>
+  <li>Region存储达到上限时(Threshold)，Region会进行分裂，数据也会分裂到多个Region中。</li>
+  <li>每个Region包含多个store对象。</li>
+  <li>每个store中包含一个MemStore，和1个或多个HFile。</li>
+  <li>MemStore 是数据在内存中的实体并且一般有序。当数据向Region写入时，会先写入到MemStore中。</li>
+  <li>当 MemStore 中的数据需要向hdfs倾倒（Dump）时（例如 MemStore 中的数据达到阈值），Store 便会创建 StoreFile，而 StoreFile 就是对 HFile 一层封装。</li>
+  <li>MemStore 中的数据会最终写入到 HFile 中，也就是磁盘 IO。由于 HBase 底层依靠 HDFS，因此 HFile 都存储在 HDFS 之中。</li>
+</ol>
+
+<h3 id="写流程">写流程</h3>
+<ol>
+  <li>client 向 HRegionServer发送写请求</li>
+  <li>HRegionServer将数据写到hlog（write ahead log）。为了数据的持久化和恢复。</li>
+  <li>HRegionServer将数据写到内存</li>
+  <li>反馈client写成功</li>
+</ol>
+
+<h3 id="数据flush过程">数据flush过程</h3>
+<ol>
+  <li>当memstore数据达到阈值（默认是128M），将数据刷 到硬盘，将数据删除，同时删除HLog中的历史数据</li>
+  <li>并将数据存储到hdfs</li>
+  <li>在hlog中标记点</li>
+</ol>
+
+<h3 id="store数据合并过程">store数据合并过程</h3>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/Store.png" alt="image" /></p>
+
+<ol>
+  <li>当数据块达到四个,hmster将数据块加载到本地，进行合并</li>
+  <li>当合并的数据超过256M，进行拆分，将拆分的Region分配给不同的HRegionServer管理</li>
+  <li>当HServer宕机后， 将HRegionServer的hlon拆分 ，然后分配不同的HRegionServer加载，修改.META</li>
+</ol>
+
+<h4 id="hbase如何保证数据可靠性">HBase如何保证数据可靠性</h4>
+
+<blockquote>
+  <p>HBase 中的 HLog 机制是 WAL 的一种实现，而 WAL（一般翻译为预写日志）是事务机制中常见的一致性的实现方式。</p>
+
+  <p><strong>每个 Region Server 中都会有一个 HLog 的实例，Region Server 会将更新操作（如 Put，Delete）先记录到 WAL（也就是 HLog）中</strong>，然后将其写入到 Store 的 MemStore，最终 MemStore 会将数据写入到持久化的 HFile 中（MemStore 到达配置的内存阀值）。</p>
+</blockquote>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/hbase/2018/12/HBase-hotpoint.html" class="read-next-link"></a>
+        <section>
+          <span>[HBase]知识点</span>
+          <p>1. hbase:meta放在哪里，以什么形式存在？</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/hbase_logo_with_orca_large.png" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/hadoop/2018/12/GITHUB.html" class="read-next-link"></a>
+          <section>
+            <span>[GITHUB]介绍</span>
+            <p>主要功能</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>

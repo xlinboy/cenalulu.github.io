@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>[HDFS]上传和下载 - xlin的个人博客</title>
+    <title>[Hadoop]文件存储格式 - xlin的个人博客</title>
     <meta name="author"  content="xlin">
-    <meta name="description" content="[HDFS]上传和下载">
-    <meta name="keywords"  content="HDFS">
+    <meta name="description" content="[Hadoop]文件存储格式">
+    <meta name="keywords"  content="Hadoop">
     <!-- Open Graph -->
-    <meta property="og:title" content="[HDFS]上传和下载 - xlin的个人博客">
+    <meta property="og:title" content="[Hadoop]文件存储格式 - xlin的个人博客">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="http://localhost:4000/hdfs/2018/12/HDFS-%E4%B8%8A%E4%BC%A0%E5%92%8C%E4%B8%8B%E8%BD%BD.html">
+    <meta property="og:url" content="http://localhost:4000/hadoop/2018/12/Hadoop-%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F.html">
     <meta property="og:description" content="记录编程的学习笔记">
     <meta property="og:site_name" content="xlin的个人博客">
     <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
@@ -110,11 +110,11 @@ Author: Ray-Eldath
       <div class="post-tags">
         
           
-            <a href="http://localhost:4000/tags#HDFS" class="post-tag">HDFS</a>
+            <a href="http://localhost:4000/tags#Hadoop" class="post-tag">Hadoop</a>
           
         
       </div>
-      <h1>[HDFS]上传和下载</h1>
+      <h1>[Hadoop]文件存储格式</h1>
       <div class="post-meta">
         <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
         <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
@@ -122,73 +122,88 @@ Author: Ray-Eldath
     </div>
     
     <div class="filter"></div>
-      <div class="post-cover" style="background: url('../../../assets/img/hadoop-logo.jpg') center no-repeat; background-size: cover;"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/wordcloud-header.jpg') center no-repeat; background-size: cover;"></div>
     
   </header>
 
   <div class="post-content visible">
     
-    <h2 class="post-subtitle">HDFS上传和下载简述流程</h2>
+    <h2 class="post-subtitle">COMMON文件存储格式</h2>
     
 
     <article class="markdown-body">
-      <h3 id="客户端上传数据">客户端上传数据:</h3>
+      <h3 id="rcfile">RCFile</h3>
 
-<p>​            <img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/20171224173355764.jpg" alt="mark" /></p>
+<p>RCFile文件格式是FaceBook开源的一种Hive的文件存储格式，首先将表分为几个行组，对每个行组内的数据进行按列存储，每一列的数据都是分开存储，正是先水平划分，再垂直划分的理念。</p>
 
-<p><strong>客户端与NameNode通迅</strong></p>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/RFCile.jpg" alt="img" /></p>
 
-<ol>
-  <li>客户端上传一个文件，namenode请求上传文件。</li>
-  <li>namenode响应并获取文件名，从元数据中查找/hadoop/hdfs/中是否已经存在相同文件名的文件，如果不存在则允许上传</li>
-  <li>客户端根据配置（dfs.blocksize - 块大少、hadoop 2.x 默认为128M）将文件切成N个block。</li>
-  <li>客户端向nameNode发出RPC请求上传第一个block，nameNode返回dataNode列表（dfs.replication - 副本个数、默认为3，需要多少个副本则返回多少个dataNode，选择dataNode主要考虑空间与距离）。</li>
-</ol>
+<p>数据部分我们可以看出RCFile将每一行，存储为一列，将一列存储为一行。</p>
 
-<p><strong>客户端与DataNode通迅</strong></p>
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/RCFile2.jpg" alt="img" /></p>
 
-<ol>
-  <li>Client与DataNodeA建立通道，上传第一个Block</li>
-  <li>请求建立block传输通道channel
+<p>而RCFile由于相同的列都是在一个HDFS块上，所以相对列存储而言会节省很多资源</p>
+
+<h3 id="orcfile">ORCFile</h3>
+
+<p>ORC的全称是(Optimized Row Columnar)，它并不是一个单纯的列式存储格式，仍然是首先根据行组分割整个表，在每一个行组内进行按列存储。</p>
+
+<p>ORC on hive优势：</p>
+<ul>
+  <li>多个输出写到同一个文件上，减少namenode压力</li>
+  <li>文件是可切分（spilt）</li>
+  <li>提供了多种索引</li>
+  <li>支持复杂的数据结构</li>
+  <li>基于块压缩</li>
+</ul>
+
+<h4 id="orc-file-structure">ORC file structure</h4>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/OrcFileLayout.png" alt="img" /></p>
+
+<h4 id="orc--parquet">ORC &amp; parquet</h4>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/orc_and_parquet.png" alt="img" /></p>
+
+<h3 id="列式存储压缩原理">列式存储压缩原理</h3>
+
+<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/encoding.png" alt="img" /></p>
+
+<h3 id="数据压缩算法">数据压缩算法</h3>
+
+<ul>
+  <li>delta-encoding 差分编码，增量编码
     <ul>
-      <li>
-        <p>DataNodeA向DataNodeB建立通道 , 通过PIPE LINE将数据传输至dataNodeB。</p>
+      <li>是通过储存差异来达到压缩的目标。</li>
+      <li>比如：
+        <ul>
+          <li>输入串：1000, 1001, 1002, 1005</li>
+          <li>压缩后：1000, 1, 2, 5</li>
+        </ul>
       </li>
-      <li>
-        <p>DataNodeB与dataNodeC建立通道，通过PIPE LINE将数据传输至dataNodeC。</p>
-      </li>
+      <li>适用场景：有序数据集，例如timestamp</li>
     </ul>
   </li>
-  <li>客户端与dataNodeA传输完毕，dataNodeA则返回一个成功答应。</li>
-</ol>
+  <li>dictionary encoding 字典编码
+    <ul>
+      <li>提供一个字典，如果输入串中的单词<strong>命中</strong>字典，则用字典中的位置来替换这个词。</li>
+      <li>适用场景：小规模的集合，例如IP地址</li>
+    </ul>
+  </li>
+  <li>run length encoding 流程编码
+    <ul>
+      <li>用一个符号或串长代替具有相同值的连续符号</li>
+      <li>一个例子：
+        <ul>
+          <li>输入串：AAAAAAAAAAAAAAA AAAAAAAAAAAAAAA AAA</li>
+          <li>压缩后为：15A 15A 3A</li>
+        </ul>
+      </li>
+      <li>适用场景：重复数据</li>
+    </ul>
+  </li>
+</ul>
 
-<h5 id="most-import">MOST IMPORT</h5>
-
-<ol>
-  <li>数据传输是以packet为单位进行传输，大小默认为64K。</li>
-  <li>packet以chunk为单位进行校验，大小默认为512Byte。</li>
-  <li>只要有一个副本上传成功即可，其余失败的副本，之后nameNode会做异步的同步。</li>
-  <li>每传一个block，都需要向nameNode发出请求, 再分配客户端复本个数的datanode。</li>
-</ol>
-
-<h3 id="客户端读数据">客户端读数据:</h3>
-
-<p><img src="https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/Hdfs%E8%AF%BB%E6%96%87%E4%BB%B6%E6%B5%81%E7%A8%8B.jpg" alt="mark" /></p>
-
-<p>读文件流程：</p>
-
-<ol>
-  <li>应用程序通过HDFS客户端向NameNode发生远程调用请求。</li>
-  <li>NameNode收到请求之后，返回文件的块列表信息。块列表信息中包含每个block拷贝的datanode地址。</li>
-  <li>HDFS 客户端会选择离自己最近的那个拷贝所在的datanode来读取数据。</li>
-  <li>数据读取完成以后，HDFS客户端关闭与当前的datanode的链接。</li>
-</ol>
-
-<p>参考：</p>
-
-<p><a href="https://blog.csdn.net/qq_26369213/article/details/78886055">HDFS客户端上传文件流程博客</a></p>
-
-<p><a href="http://www.voidcn.com/article/p-vylwijve-brm.html">HDFS读写文件流程</a></p>
 
     </article>
 
@@ -228,28 +243,28 @@ Author: Ray-Eldath
     <section class="post-footer-item read-next">
       
       <div class="read-next-item">
-        <a href="/hdfs/2018/12/HDFS-%E9%AB%98%E5%8F%AF%E7%94%A8.html" class="read-next-link"></a>
+        <a href="/hbase/2018/12/Hbase-%E6%B7%B1%E5%85%A5.html" class="read-next-link"></a>
         <section>
-          <span>[HDFS]高可用</span>
-          <p>  它需要zookeeper的调度，首先配置zookeeper</p>
+          <span>[HBase]操作</span>
+          <p>1. shell 创建表的多种形式</p>
         </section>
         
         <div class="filter"></div>
-        <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+        <img src="../../../assets/img/hbase_logo_with_orca_large.png" alt="">
         
      </div>
       
 
       
       <div class="read-next-item">
-        <a href="/hbase/2018/12/HBase-hotpoint.html" class="read-next-link"></a>
+        <a href="/hadoop/2018/12/Hadoop-%E5%AE%89%E8%A3%85%E6%96%B9%E5%BC%8F.html" class="read-next-link"></a>
           <section>
-            <span>[HBase]知识点</span>
-            <p>1. hbase:meta放在哪里，以什么形式存在？</p>
+            <span>[Hadoop]安装方式</span>
+            <p>下载</p>
           </section>
           
           <div class="filter"></div>
-          <img src="../../../assets/img/hbase_logo_with_orca_large.png" alt="">
+          <img src="../../../assets/img/hadoop-logo.jpg" alt="">
           
       </div>
       

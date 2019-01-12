@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[HBase]操作 - xlin的个人博客</title>
+    <meta name="author"  content="xlin">
+    <meta name="description" content="[HBase]操作">
+    <meta name="keywords"  content="HBase">
+    <!-- Open Graph -->
+    <meta property="og:title" content="[HBase]操作 - xlin的个人博客">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://localhost:4000/hbase/2018/12/Hbase-%E6%B7%B1%E5%85%A5.html">
+    <meta property="og:description" content="记录编程的学习笔记">
+    <meta property="og:site_name" content="xlin的个人博客">
+    <link rel="stylesheet" href="//cdn.staticfile.org/normalize/6.0.0/normalize.min.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_roc50gemkxpw4s4i.css">
+    <link rel="stylesheet" href="/assets/css/github-markdown.css">
+    <link rel="stylesheet" href="/assets/css/prism.css">
+    <link rel="stylesheet" href="/assets/css/share.min.css">
+    <link rel="stylesheet" href="/assets/css/app.min.css">
+    <link rel="stylesheet" href="/assets/css/gitalk.css">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	
+    <!--
+Author: Ray-Eldath
+-->
+<style>
+    .markdown-body .anchor{
+        float: left;
+        margin-top: -8px;
+        margin-left: -20px;
+        padding-right: 4px;
+        line-height: 1;
+        opacity: 0;
+    }
+    
+    .markdown-body .anchor .anchor-icon{
+        font-size: 15px
+    }
+</style>
+<script>
+    $(document).ready(function() {
+        let nodes = document.querySelector(".markdown-body").querySelectorAll("h1,h2,h3")
+        for(let node of nodes) {
+            var anchor = document.createElement("a")
+            var anchorIcon = document.createElement("i")
+            anchorIcon.setAttribute("class", "fa fa-anchor fa-lg anchor-icon")
+            anchorIcon.setAttribute("aria-hidden", true)
+            anchor.setAttribute("class", "anchor")
+            anchor.setAttribute("href", "#" + node.getAttribute("id"))
+            
+            anchor.onmouseover = function() {
+                this.style.opacity = "0.4"
+            }
+            
+            anchor.onmouseout = function() {
+                this.style.opacity = "0"
+            }
+            
+            anchor.appendChild(anchorIcon)
+            node.appendChild(anchor)
+        }
+    })
+</script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-124506309-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() {
+            dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-124506309-1');
+    </script>
+
+    
+</head>
+
+
+<body>
+  <!--[if lt IE 10]>
+<div class="alert-danger" role="alert">你的浏览器实在太太太旧了，放学别走，升级完浏览器再说！<a target="_blank" class="alert-link" href="http://browsehappy.com">立即升级</a></div>
+<![endif]-->
+  <input id="nm-switch" type="hidden" value="false"> <header class="g-header">
+    <div class="g-logo">
+      <a href="/"></a>
+    </div>
+    <i id="menu-toggle" class="iconfont icon-menu"></i>
+    <nav class="g-nav">
+        <ul>
+            
+            <li><a href="/">home</a></li>
+            
+            <li><a href="/tags.html">tags</a></li>
+            
+            <li><a href="/categories.html">categories</a></li>
+            
+        </ul>
+    </nav>
+</header>
+
+
+  <header class="g-banner post-header post-pattern-circuitBoard bgcolor-default " data-theme="default">
+    <div class="post-wrapper">
+      <div class="post-tags">
+        
+          
+            <a href="http://localhost:4000/tags#HBase" class="post-tag">HBase</a>
+          
+        
+      </div>
+      <h1>[HBase]操作</h1>
+      <div class="post-meta">
+        <span class="post-meta-item"><i class="iconfont icon-author"></i><a href="http://localhost:4000" target="_blank" rel="author">xlin</a></></span>
+        <time class="post-meta-item" datetime="18-12-16"><i class="iconfont icon-date"></i>16 Dec 2018</time>
+      </div>
+    </div>
+    
+    <div class="filter"></div>
+      <div class="post-cover" style="background: url('../../../assets/img/hbase_logo_with_orca_large.png') center no-repeat; background-size: cover;"></div>
+    
+  </header>
+
+  <div class="post-content visible">
+    
+    <h2 class="post-subtitle">HBase的指令操作及预分区</h2>
+    
+
+    <article class="markdown-body">
+      <h3 id="1-shell-创建表的多种形式">1. shell 创建表的多种形式</h3>
+
+<p>注意命名空间、多个列簇及属性</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">Create</span> <span class="n">a</span> <span class="k">table</span> <span class="k">with</span> <span class="n">namespace</span><span class="o">=</span><span class="n">ns1</span> <span class="k">and</span> <span class="k">table</span> <span class="n">qualifier</span><span class="o">=</span><span class="n">t1</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'ns1:t1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="n">VERSIONS</span> <span class="o">=&gt;</span> <span class="mi">5</span><span class="err">}</span>
+
+<span class="k">Create</span> <span class="n">a</span> <span class="k">table</span> <span class="k">with</span> <span class="n">namespace</span><span class="o">=</span><span class="k">default</span> <span class="k">and</span> <span class="k">table</span> <span class="n">qualifier</span><span class="o">=</span><span class="n">t1</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f1'</span><span class="err">}</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f2'</span><span class="err">}</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f3'</span><span class="err">}</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="o">#</span> <span class="n">The</span> <span class="n">above</span> <span class="k">in</span> <span class="n">shorthand</span> <span class="n">would</span> <span class="n">be</span> <span class="n">the</span> <span class="n">following</span><span class="p">:</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="s1">'f2'</span><span class="p">,</span> <span class="s1">'f3'</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="n">VERSIONS</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="n">TTL</span> <span class="o">=&gt;</span> <span class="mi">2592000</span><span class="p">,</span> <span class="n">BLOCKCACHE</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="err">}</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="n">CONFIGURATION</span> <span class="o">=&gt;</span> <span class="err">{</span><span class="s1">'hbase.hstore.blockingStoreFiles'</span> <span class="o">=&gt;</span> <span class="s1">'10'</span><span class="err">}}</span>
+</code></pre></div></div>
+<h3 id="2-预分区">2. 预分区</h3>
+<p>table 逻辑上的分区，以行的形式存储</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>region 
+startkey, endkey
+</code></pre></div></div>
+<ul>
+  <li>默认情况下，创建表hbase表会自动为表分区</li>
+  <li>一般情况下，创建好表之后，会导入大量数据
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="n">file</span><span class="o">/</span><span class="k">data</span> <span class="o">-&gt;</span> <span class="n">file</span> <span class="o">-&gt;</span> <span class="n">bulk</span> <span class="k">load</span>
+    
+  <span class="n">region</span> <span class="o">-&gt;</span> <span class="n">managed</span> <span class="n">regionserver</span>
+      <span class="o">|</span>
+      <span class="o">|</span>
+      <span class="n">split</span> <span class="o">-&gt;</span> <span class="n">two</span> <span class="n">region</span>
+      <span class="o">|</span>
+      <span class="o">|</span>
+      <span class="n">regionserver</span><span class="err">负载大</span>
+</code></pre></div>    </div>
+    <p>所以，一般会在创建表的时候就创建多个region，依据表的rowkey进行设计，结合业务</p>
+  </li>
+  <li>如何预先创建多个region？ <strong>hbase表的预分区</strong></li>
+  <li>region划分依赖rowkey，预估rowkey的划分准则</li>
+</ul>
+
+<p>region划分依赖rowkey，预估rowkey的划分准则</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'ns1:t1'</span><span class="p">,</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="n">SPLITS</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'10'</span><span class="p">,</span> <span class="s1">'20'</span><span class="p">,</span> <span class="s1">'30'</span><span class="p">,</span> <span class="s1">'40'</span><span class="p">]</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'h_work'</span><span class="p">,</span> <span class="s1">'info'</span><span class="p">,</span> <span class="n">SPLITS</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'001'</span><span class="p">,</span> <span class="s1">'002'</span><span class="p">,</span> <span class="s1">'003'</span><span class="p">,</span> <span class="s1">'004'</span><span class="p">,</span><span class="s1">'007'</span><span class="p">,</span><span class="s1">'015'</span><span class="p">,</span><span class="s1">'050'</span><span class="p">,</span><span class="s1">'100'</span><span class="p">,</span><span class="s1">'150'</span><span class="p">,</span><span class="s1">'200'</span><span class="p">,</span><span class="s1">'250'</span><span class="p">,</span><span class="s1">'300'</span><span class="p">]</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="n">SPLITS_FILE</span> <span class="o">=&gt;</span> <span class="s1">'splits.txt'</span><span class="p">,</span> <span class="k">OWNER</span> <span class="o">=&gt;</span> <span class="s1">'johndoe'</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="n">VERSIONS</span> <span class="o">=&gt;</span> <span class="mi">5</span><span class="err">}</span><span class="p">,</span> <span class="n">METADATA</span> <span class="o">=&gt;</span> <span class="err">{</span> <span class="s1">'mykey'</span> <span class="o">=&gt;</span> <span class="s1">'myvalue'</span> <span class="err">}</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="o">#</span> <span class="n">Optionally</span> <span class="n">pre</span><span class="o">-</span><span class="n">split</span> <span class="n">the</span> <span class="k">table</span> <span class="k">into</span> <span class="n">NUMREGIONS</span><span class="p">,</span> <span class="k">using</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="o">#</span> <span class="n">SPLITALGO</span> <span class="p">(</span><span class="nv">"HexStringSplit"</span><span class="p">,</span> <span class="nv">"UniformSplit"</span> <span class="k">or</span> <span class="n">classname</span><span class="p">)</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NUMREGIONS</span> <span class="o">=&gt;</span> <span class="mi">15</span><span class="p">,</span> <span class="n">SPLITALGO</span> <span class="o">=&gt;</span> <span class="s1">'HexStringSplit'</span><span class="err">}</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NUMREGIONS</span> <span class="o">=&gt;</span> <span class="mi">15</span><span class="p">,</span> <span class="n">SPLITALGO</span> <span class="o">=&gt;</span> <span class="s1">'HexStringSplit'</span><span class="p">,</span> <span class="n">REGION_REPLICATION</span> <span class="o">=&gt;</span> <span class="mi">2</span><span class="p">,</span> <span class="n">CONFIGURATION</span> <span class="o">=&gt;</span> <span class="err">{</span><span class="s1">'hbase.hregion.scan.loadColumnFamiliesOnDemand'</span> <span class="o">=&gt;</span> <span class="s1">'true'</span><span class="err">}}</span>
+<span class="n">hbase</span><span class="o">&gt;</span> <span class="k">create</span> <span class="s1">'t1'</span><span class="p">,</span> <span class="err">{</span><span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'f1'</span><span class="p">,</span> <span class="n">DFS_REPLICATION</span> <span class="o">=&gt;</span> <span class="mi">1</span><span class="err">}</span>
+</code></pre></div></div>
+<p>如：</p>
+<ol>
+  <li>create ‘logs’,’info’,SPLITS =&gt; [‘20181010’,’20181020’,’20181030’]</li>
+  <li>指定分隔文件
+ create ‘logs’,’info’,SPLITS =&gt; ‘opt/datas/logs_split.txt’</li>
+  <li>指定多少分区，十六进制字符串分割
+ create ‘t1’, ‘f1’, {NUMREGIONS =&gt; 3, SPLITALGO =&gt; ‘HexStringSplit’}</li>
+</ol>
+
+<h3 id="表属性">表属性</h3>
+<p>查看一张表的属性，describe ‘user’</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">COLUMN</span> <span class="n">FAMILIES</span> <span class="n">DESCRIPTION</span>                                                     
+<span class="err">{</span>
+<span class="n">NAME</span> <span class="o">=&gt;</span> <span class="s1">'info'</span><span class="p">,</span> 
+<span class="n">BLOOMFILTER</span> <span class="o">=&gt;</span> <span class="s1">'ROW'</span><span class="p">,</span>  <span class="err">布隆过滤器</span>
+<span class="n">VERSIONS</span> <span class="o">=&gt;</span> <span class="s1">'1'</span><span class="p">,</span> 
+<span class="n">IN_MEMORY</span> <span class="o">=&gt;</span> <span class="s1">'false'</span><span class="p">,</span> 
+<span class="n">KEEP_DELETED_CELLS</span> <span class="o">=&gt;</span> <span class="s1">'FALSE'</span><span class="p">,</span> 
+<span class="n">DATA_BLOCK_ENCODING</span> <span class="o">=&gt;</span> <span class="s1">'NONE'</span><span class="p">,</span> 	
+<span class="n">TTL</span> <span class="o">=&gt;</span> <span class="s1">'FOREVER'</span><span class="p">,</span> 
+<span class="n">COMPRESSION</span> <span class="o">=&gt;</span> <span class="s1">'NONE'</span><span class="p">,</span> 	<span class="err">压缩属性</span>
+	<span class="n">hadoop</span> <span class="n">checknative</span><span class="err">查看当前</span><span class="n">hadoop</span><span class="err">支持哪些压缩</span>
+<span class="n">MIN_VERSIONS</span> <span class="o">=&gt;</span> <span class="s1">'0'</span><span class="p">,</span> 
+<span class="n">BLOCKCACHE</span> <span class="o">=&gt;</span> <span class="s1">'true'</span><span class="p">,</span> 
+<span class="n">BLOCKSIZE</span> <span class="o">=&gt;</span> <span class="s1">'65536'</span><span class="p">,</span> 
+<span class="n">REPLICATION_SCOPE</span> <span class="o">=&gt;</span> <span class="s1">'0'</span>
+<span class="err">}</span>
+</code></pre></div></div>
+
+<h4 id="1-压缩属性">1. 压缩属性</h4>
+<p>配置hbase的snappyd压缩</p>
+<ol>
+  <li>配置hadoop 的压缩配置</li>
+  <li>配置hbase
+    <ul>
+      <li>hadoop-snappy-0.0.1-SNAPSHOT.jar放到hbase的lib下</li>
+      <li>需要将本地的库native内容放到hbase的lib下的native目录下</li>
+    </ul>
+  </li>
+</ol>
+
+<p>创建软连接即可</p>
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ln</span> <span class="o">-</span><span class="n">s</span> <span class="err">$</span><span class="n">HADOOP_HOME</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">native</span> <span class="err">$</span><span class="n">HBASE_HOME</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">native</span><span class="o">/</span><span class="n">Linux</span><span class="o">-</span><span class="n">amd64</span><span class="o">-</span><span class="mi">64</span>
+</code></pre></div></div>
+<p>然后创建表的时候，可以指定d压缩属性。</p>
+
+<p>需要强制告诉regionserver，配置hbase.regionserver.codecs的value为snappy，且重启regionserver生效</p>
+
+<p><strong>但是如果原表里面已经有了很多数据，那么压缩是不会生效的</strong></p>
+
+<h4 id="2-regionserver的内存">2. regionserver的内存</h4>
+<ul>
+  <li>memstore 40%</li>
+  <li>blockcache 40%，块缓存每个regionserver只有一个blockcache</li>
+  <li>other</li>
+</ul>
+
+<p>客户端读取数据会从三个地方读取数据，按顺序读取</p>
+<ol>
+  <li>memstore</li>
+  <li>blockcache</li>
+  <li>hfile
+然后进行merge合并，返回数据集。</li>
+</ol>
+
+<h5 id="cache的等级">cache的等级</h5>
+<ul>
+  <li>immemory:0.25, 即缓存数据放在不轻易删除的内存中，如meta元数据信息。<code class="highlighter-rouge">describe 'inmemory'</code></li>
+  <li>multi:0.50, 即比较重要的数据</li>
+  <li>single:0.25, 即可以缓存也可以不缓存的信息，最少使用的会加入到淘汰算法</li>
+</ul>
+
+<h3 id="表的compaction">表的compaction</h3>
+<ul>
+  <li>minor合并:多个小文件合并成多个大文件，即多路归并，受磁盘IO影响。</li>
+  <li>major合并，将一个region中的一列簇的所有hfile重写为一个新的hfile。扫描所有的键值对，顺序重写全部的数据。重写数据过程，略过做了删除标记的数据，以及超出版本号限制的数据。</li>
+  <li>重量级合并：阻塞所有的region的请求，有时间限制 ，直到合并完毕。小心死循环</li>
+</ul>
+
+<h3 id="hbasehiveimpala">HBase+Hive/impala</h3>
+
+<p><code class="highlighter-rouge">https://cwiki.apache.org/confluence/display/hive/hbaseintegration</code></p>
+
+<ol>
+  <li>
+    <p>数据存储在HBase</p>
+  </li>
+  <li>
+    <p>表的描述信息存储在hive中
+ hive从0.9.0版本才开始支持与HBase集成</p>
+  </li>
+  <li>
+    <p>集成方式</p>
+  </li>
+  <li>
+    <p>管理表</p>
+  </li>
+</ol>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>&gt;  创建hive表的时候，指定数据存储在hbase表中
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>外部表</p>
+
+    <blockquote>
+      <p>现在已经存在了一个hbase表，需要对表中的数据进行分析</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>本质</p>
+
+    <blockquote>
+      <p>hive就是hbase的客户端，需要jar包以及配置</p>
+    </blockquote>
+  </li>
+  <li>
+    <p>需要将hbase的依赖jar拷贝到hive/lib下</p>
+
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">包括</span>
+    <span class="n">hbase</span><span class="o">-</span><span class="n">common</span><span class="p">....</span>
+    <span class="n">hbase</span><span class="o">-</span><span class="n">server</span><span class="p">....</span>
+    <span class="n">hbase</span><span class="o">-</span><span class="n">client</span><span class="p">....</span>
+    <span class="n">hbase</span><span class="o">-</span><span class="n">protocol</span><span class="p">....</span>
+    <span class="n">hbase</span><span class="o">-</span><span class="n">it</span><span class="o">-</span><span class="p">....</span>
+    <span class="n">hbase</span><span class="o">-</span><span class="n">hadoop</span><span class="o">-</span><span class="n">compat</span><span class="o">-</span><span class="p">....</span>
+    <span class="n">hbase</span><span class="o">-</span><span class="n">hadoop2</span><span class="o">-</span><span class="n">compat</span><span class="o">-</span><span class="p">....</span>
+    <span class="n">high</span><span class="o">-</span><span class="k">scale</span><span class="o">-</span><span class="n">lib</span><span class="o">-</span><span class="p">....</span>
+    <span class="n">htrace</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="p">....</span>
+    <span class="n">zookeeper</span><span class="o">-</span><span class="p">....</span>
+    <span class="n">guave</span><span class="o">-</span><span class="p">...</span>
+    <span class="err">版本要一致，以</span><span class="n">hbase</span><span class="err">版本为准</span>
+</code></pre></div>    </div>
+
+    <ol>
+      <li>
+        <p>在hive-site.xml文件中，添加zookeeper参数</p>
+
+        <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hbase.zookeeper.quorum
+hadoop1,hadoop2,hadoop3
+</code></pre></div>        </div>
+      </li>
+    </ol>
+  </li>
+  <li>创建一张hive管理表
+    <div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  CREATE TABLE hbase_table_1(key int, value string) 
+  STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+  WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf1:val")
+  TBLPROPERTIES ("hbase.table.name" = "xyz", "hbase.mapred.output.outputtable" = "xyz");
+       
+  建表之后，查看表的描述信息
+  hive&gt; desc formatted hbase_table_1;
+  hbase&gt; describe 'xyz'
+       
+  使用hive语句导入数据
+  hbase&gt; scan 'xyz'
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>外部表
+   即把已有的hbase表映射到hive的表</p>
+
+    <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   <span class="k">CREATE</span> <span class="k">EXTERNAL</span> <span class="k">TABLE</span> <span class="n">hbase_table_2</span><span class="p">(</span><span class="k">key</span> <span class="n">int</span><span class="p">,</span> <span class="n">value</span> <span class="n">string</span><span class="p">)</span> 
+   <span class="n">STORED</span> <span class="k">BY</span> <span class="s1">'org.apache.hadoop.hive.hbase.HBaseStorageHandler'</span>
+   <span class="k">WITH</span> <span class="n">SERDEPROPERTIES</span> <span class="p">(</span><span class="nv">"hbase.columns.mapping"</span> <span class="o">=</span> <span class="nv">"cf1:val"</span><span class="p">)</span>
+   <span class="n">TBLPROPERTIES</span><span class="p">(</span><span class="nv">"hbase.table.name"</span> <span class="o">=</span> <span class="nv">"some_existing_table"</span><span class="p">,</span> <span class="nv">"hbase.mapred.output.outputtable"</span> <span class="o">=</span> <span class="nv">"some_existing_table"</span><span class="p">);</span>
+</code></pre></div>    </div>
+  </li>
+  <li>应用场景
+    <ul>
+      <li>有时候的数据迁移也是用这种方法</li>
+      <li>如日志文件保存到hbase表</li>
+      <li>导入hive表，使用列分割全表数据</li>
+      <li>查询数据并写入hive-hbase-table</li>
+    </ul>
+  </li>
+</ol>
+
+    </article>
+
+    
+    <div class="social-share-wrapper">
+      <div class="social-share"></div>
+    </div>
+    
+  </div>
+
+  <section class="author-detail">
+    <section class="post-footer-item author-card">
+      <div class="avatar">
+        <img src="http://localhost:4000/assets/img/profile.png" alt="">
+      </div>
+      <div class="author-name" rel="author">xlin</div>
+      <div class="bio">
+        <p>spark/hadoop/hadoop/hbase</p>
+      </div>
+      
+      <ul class="sns-links">
+        
+        <li>
+          <a href="https://github.com/xlinboy" target="_blank">
+                    <i class="iconfont icon-github"></i>
+                </a>
+        </li>
+        
+      </ul>
+      
+    </section>
+
+    <section class="post-footer-item comment">
+      <div id="comment_container"></div>
+    </section>
+
+    <section class="post-footer-item read-next">
+      
+      <div class="read-next-item">
+        <a href="/hadoop/2018/12/MapReduce-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.html" class="read-next-link"></a>
+        <section>
+          <span>[Mapreduce]执行流程</span>
+          <p>  MapReduce是一个分布式运算程序的编程框架。其核心功能是：将用户编写的业务逻辑代码和自带默认组件整合成一...</p>
+        </section>
+        
+        <div class="filter"></div>
+        <img src="../../../assets/img/hadoop-logo.jpg" alt="">
+        
+     </div>
+      
+
+      
+      <div class="read-next-item">
+        <a href="/hadoop/2018/12/Hadoop-%E6%96%87%E4%BB%B6%E5%AD%98%E5%82%A8%E6%A0%BC%E5%BC%8F.html" class="read-next-link"></a>
+          <section>
+            <span>[Hadoop]文件存储格式</span>
+            <p>RCFile</p>
+          </section>
+          
+          <div class="filter"></div>
+          <img src="../../../assets/img/wordcloud-header.jpg" alt="">
+          
+      </div>
+      
+    </section>
+
+  </section>
+
+  <footer class="g-footer">
+  <section>xlin的个人博客 ©
+  
+  
+    2018
+    -
+  
+  2019
+  </section>
+  <section>Powered by <a href="//jekyllrb.com">Jekyll</a> | <a href="https://github.com/kaeyleo/jekyll-theme-H2O">Theme H2O</a></section>
+</footer>
+
+
+  <script src="/assets/js/social-share.min.js"></script>
+  <script>
+    socialShare('.social-share', {
+      sites: [
+        
+          'wechat'
+          ,
+          
+        
+          'weibo'
+          ,
+          
+        
+          'twitter'
+          
+        
+      ],
+      wechatQrcodeTitle: "分享到微信朋友圈",
+      wechatQrcodeHelper: '<p>扫码后点击右上角</p><p>将本文分享至朋友圈</p>'
+    });
+  </script>
+
+  
+
+  <script src="/assets/js/prism.js"></script>
+  <script src="/assets/js/index.min.js"></script>
+</body>
+
+</html>
