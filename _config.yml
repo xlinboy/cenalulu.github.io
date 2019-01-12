@@ -1,8 +1,8 @@
 # Site settings 配置站点
 title: 'xlin的个人博客'
-description: '记录编程的学习笔记'
+description: '记录大数据学习笔记'
 keyword: 'xlin, 大数据, xlin的个人博客'
-url: 'http://xlinboy.github.io' # your host
+url: 'https://xlinboy.github.io/' # your host
 
 # if you don't need baseurl, you should leave this value blank.
 baseurl: ''
@@ -20,7 +20,7 @@ footer:
 # Author 配置博主信息
 author: 'xlinboy'
 nickname: 'xlinboy'
-bio: '即将步入社会的年轻营'
+bio: '即将步入社会的年轻任'
 avatar: '/assets/img/colorama-header.jpg'
 
 # Search
@@ -47,7 +47,7 @@ social-share: true
 social-share-items: ['wechat', 'weibo', 'twitter']
 
 # theme color 主题皮肤
-theme-color: 'default'  # pink or default
+theme-color: 'pink'  # pink or default
 
 # Post header background patterns (when the post no cover): circuitBoard, overlappingCircles, food, glamorous, ticTacToe, seaOfClouds
 postPatterns: 'circuitBoard'
