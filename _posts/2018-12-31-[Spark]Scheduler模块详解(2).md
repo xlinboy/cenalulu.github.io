@@ -1,58 +1,14 @@
 ---
 layout: post
-title: '[spark] Scheduler模块源码详解'
-subtitle: 'Spark scheduler源码分析, spark源码版本1.3'
+title: '[spark]Scheduler模块源码详解(2)'
+subtitle: 'scheduler源码分析, DAGScheduler'
 date: 2018-12-25
 categories: spark
 cover: '../../../assets/img/random-header.jpg'
-tags: Spark Spark源码
+tags: Spark源码
 ---
 
-### Scheduler模块详解
-
-Scheduler（任务调用）是Spark Core核心之一，充分体现了与Mapreduce完全不同的设计思想。
-
-那么它们之前的任务，是怎么进行调度的，组成应用的Job是如何分配资源的呢。
-
-#### 1 模块概述
-
-##### 1.1 整体架构
-
-任务高度分为两大模块： `DAGScheduler`和`TaskScheduler`。它们负责将用户提前的计算任务按照DAG划分为不同的阶段并且将不同阶段的计算任务提交到集群进行最终计算。
-
-![img](https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/2018-12-31-Scheduler.png)
-
-- `RDD Object `用户实际代码中创建的RDD。
-- `DAGScheduler`负责分析用户提交的应用，并根据计算任务的依赖建立DAG，然后将DAG划分成不同的Stage，其中每个Stage由可以并发执行一组Task构成，这些Task的执行逻辑完全相同，只是执行的数据不同。
-- `DAGScheduler`将这组Task划分完成之后 ，会将这组Task提交到`TaskScheudler`。`TaskScheduler`通过`Cluster Manager`在集群中的某个`Worker`的`Executor`上启动任务。
-- 在`Executor`中运算的任务，如果缓存中没有计算结果，则需要开始计算，同时，计算的结果会回传到Driver或保存到本地。
-
-##### 1.2 Scheduler的实现概述
-
-任务调用三个主要的模块：
-
-1. `org.apache.spark.scheduler.DAGScheduler`
-   - DAGScheduler的实现
-2. `org.apache.spark.scheduler.SchedulerBackend`
-   - 是一个trait, 主要作用是分配当前资源。
-   - 具体来说，向当前等待资源的Task分配计算资源（即 Executor），并且在分配的Executor上启动Task，完成计算的调度过程。它最重要的实现是`reviveOffers`
-3. `org.apache.spark.scheduler.TaskScheduler`
-   - 是一个trait, 主要作用是创建SparkContext调度任务。
-   - 从DAGScheduler接收不同Stage任务，并且向集群提交任务，并为执行特别慢的任务启动备份任务
-   - `org.apache.spark.scheduler.TaskSchedulerImpl`是其唯一实现
-
-TaskSchedulerImpl会在以下几种场景下调用`org.apache.spark.scheduler.SchedulerBackend# reviveOffers`: 
-
-- 有新任务提交
-- 有任务执行失败
-- 计算节点（即Executor）不可用时
-- 某些任务执行过慢而需要为它重新分配资源时
-
-任务调度逻辑图：
-
-![img](https://xlactive-1258062314.cos.ap-chengdu.myqcloud.com/2018-12-31-ClientTaskScheduler.png)
-
-#### 2 DAGScheduler 实现详解
+### DAGScheduler 实现详解
 
 以RDD的Action count为例。
 
@@ -68,7 +24,7 @@ SparkContext实现了很多runjob,p这些函数的区别，就是参数的不同
 dagScheduler.runJob(rdd, cleanedFunc, partitions, callSite, allowLocal, resultHandler, localProperties.get)
 ```
 
-##### 2.1 DAGScheduler的创建
+#### 1.1 DAGScheduler的创建
 
 TaskScheduler和DAGScheduler都是在SparkContext创建的时候创建的。两者创建的方式不同：
 
@@ -172,7 +128,7 @@ override def onReceive(event: DAGSchedulerEvent): Unit = event match {
     .......
 ```
 
-##### 2.2 Job提交
+#### 1.2 Job提交
 
 用户提交最终会调用DAGScheduler的runjob，它又会调用submitJob。
 
@@ -232,7 +188,7 @@ override def onReceive(event: DAGSchedulerEvent): Unit = event match {
 ......
 ```
 
-##### 2.3 Stage划分
+#### 1.3 Stage划分
 
 ```scala
 package org.apache.spark.scheduler.DAGScheduler#handleJobSubmitted
@@ -398,7 +354,7 @@ if (mapOutputTracker.containsShuffle(shuffleDep.shuffleId)) {
 }
 ```
 
-##### 2.4 任务生成
+#### 1.4 任务生成
 
 `handleJobSubmitted`创建finalStage后，就会为该Job创建一个`org.apache.spark.scheduler.ActiveJob`,并准备计算这个finalStage
 
@@ -520,36 +476,10 @@ TaskSet保存了Stage包含的一组完全相同的Task，每个Task的处理逻
 
 DAGScheduler就完成了它的使用，然后它会等待TaskScheduler最终向集群提交这些Task，监听这些Task状态。
 
-#### 3 任务调度
-
-每个TaskScheduler都对应一个SchedulerBackend
-
-- TaskScheduler负责不同Job之间的调度，在Task执行失败时，重试这个任务，并为执行速度慢的Task启动备份的任务
-- SchedulerBackend负责与Cluster Manager交互，取得该Application分配到的资源，并将这些资源传给TaskScheduler，由TaskScheduler为Task分配最终计算资源
-
-#### 3.1 TaskScheduler的创建
-
-在SparkContext创建时，TaskScheduler 与 DAGScheduler也创建了。TaskScheduler是由SparkContext#createTaskScheduler创建的。
-
-createTaskScheduler首先根据正则匹配不同的	集群模式。根据不同的集群部署模式，例如 Standlone, Mesos, Yarn 或是Local等，根据不同的模式，生成不同的TaskScheduler和SchedulerBackend。
-
-Standlonde模式的创建过程:
-
-```scala
-val SPARK_REGEX = """spark://(.*)""".r
-case SPARK_REGEX(sparkUrl) =>
-//此处就是创建taskScheduler的实现类
-val scheduler = new TaskSchedulerImpl(sc)
-val masterUrls = sparkUrl.split(",").map("spark://" + _)
-//此处就是创建SparkBackEend的实现类
-val backend = new SparkDeploySchedulerBackend(scheduler, sc, masterUrls)
-//对taskscheduler进行初始化，也就是将taskscheduler与sparkbackend进行绑定
-scheduler.initialize(backend)
-(backend, scheduler)
-```
 
 
-
-
+参考：
 
 [DAGScheduler 源码浅析](https://blog.csdn.net/JasonDing1354/article/details/46896341 )
+
+<Spark技术内幕 李安>
