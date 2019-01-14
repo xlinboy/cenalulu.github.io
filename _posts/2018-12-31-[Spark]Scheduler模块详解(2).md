@@ -1,10 +1,10 @@
 ---
 layout: post
-title: '[spark]Scheduler模块源码详解(2)'
-subtitle: 'scheduler源码分析, DAGScheduler'
-date: 2018-12-25
+title: '[spark]Scheduler模块源码详解(2)DAGScheduler源码分析'
+subtitle: 'DAGScheduler源码分析, '
+date: 2018-12-31
 categories: spark
-cover: '../../../assets/img/random-header.jpg'
+cover: '../../../assets/img/spark.png'
 tags: Spark源码
 ---
 

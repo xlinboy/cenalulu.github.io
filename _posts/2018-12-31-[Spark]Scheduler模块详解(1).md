@@ -1,10 +1,10 @@
 ---
 layout: post
-title: '[Spark]Scheduler模块详解(2)'
+title: '[Spark]Scheduler模块详解(1)模块概述'
 subtitle: 'scheduler模块概述, spark源码版本1.3'
-date: 2018-12-25
+date: 2018-12-31
 categories: spark
-cover: '../../../assets/img/random-header.jpg'
+cover: '../../../assets/img/spark.png'
 tags: Spark源码
 ---
 
